@@ -1,0 +1,42 @@
+							OMLC
+1_Topic:
+		pandas documentation: 
+				https://pandas.pydata.org/pandas-docs/stable/index.html
+
+2_Topic:
+		Многообразное обучение в scikit-learn:
+				https://scikit-learn.org/stable/modules/manifold.html
+		matplotlib documentation:
+				https://matplotlib.org/stable/contents.html
+		seaborn documentation:
+				https://seaborn.pydata.org/introduction.html
+		Галерея образцов карт seaborn:
+				http://seaborn.pydata.org/examples/index.html
+		Эффективная реализация t-SNE:
+				https://distill.pub/2016/misread-tsne/
+
+3_Topic:
+		numpy documentation (в ресурсах)
+				https://numpy.org/doc/stable/index.html
+		Деревья решений и k ближайших соседей 
+				«Распознавание образов и машинное обучение» (К. Бишоп)
+				«Машинное обучение: вероятностная перспектива» (К. Мерфи).
+		Реализации классических алгоритмов машинного обучения на чистом Python
+				«Книга «Машинное обучение в действии» (П. Харрингтон)
+		библиотека Scikit-learn
+				https://scikit-learn.org/stable/index.html
+		Scipy 2017 учебник scikit-learn
+				https://github.com/amueller/scipy-2017-sklearn
+		Еще один курс ML (в ресурсах)
+				https://github.com/diefimov/MTH594_MachineLearning
+		Реализации многих алгоритмов машинного обучения (поиск деревьев решений и k-NN)
+				https://github.com/rushter/MLAlgorithms
+
+4_Topic:
+		Обзор линейных моделей дан в книге «Глубокое обучение» (И. Гудфеллоу, Ю. Бенжио и А. Курвиль):
+				https://www.deeplearningbook.org
+				https://www.deeplearningbook.org/contents/ml.html
+		Подробный обзор линейной модели с точки зрения статистики, посмотрите «Элементы статистического обучения» (Т. Хасти, Р. Тибширани и Дж. Фридман).		
+				“The elements of statistical learning” (T. Hastie, R. Tibshirani, and J. Friedman).
+		Книга «Машинное обучение в действии» (П. Харрингтон) проведет вас через реализации классических алгоритмов машинного обучения на чистом Python.
+				“Machine Learning in Action” (P. Harrington)
