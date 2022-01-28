@@ -1,4 +1,5 @@
 # https://medium.com/open-machine-learning-course/open-machine-learning-course-topic-5-ensembles-of-algorithms-and-random-forest-8e05246cbba7
+# https://mlcourse.ai/book/topic05/topic5_part2_random_forest.html
 
 import pandas as pd
 from matplotlib import pyplot as plt
