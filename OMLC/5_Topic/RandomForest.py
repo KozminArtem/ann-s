@@ -1,3 +1,5 @@
+# https://mlcourse.ai/book/topic05/topic5_part2_random_forest.html
+
 # Disable warnings in Anaconda
 import warnings
 warnings.filterwarnings('ignore')

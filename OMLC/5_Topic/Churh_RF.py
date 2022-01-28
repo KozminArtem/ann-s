@@ -1,3 +1,5 @@
+# https://mlcourse.ai/book/topic05/topic5_part2_random_forest.html
+
 import warnings
 warnings.filterwarnings('ignore')
 import numpy as np
