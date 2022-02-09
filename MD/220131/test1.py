@@ -16,20 +16,40 @@ import datetime
 								# Знакомство с файлами
 
 
-df_raw = pd.read_csv('220131_H2S_high_T/field_raw/G10002A3.csv')										
-df_src = pd.read_csv('220131_H2S_high_T/field_src/G10002A3.csv')	
+df_raw = pd.read_csv('220131_H2S_high_T/field_raw/G10002F1.csv')										
+df_src = pd.read_csv('220131_H2S_high_T/field_src/G2000315.csv')	
 df_src_CO = pd.read_csv('220131_H2S_high_T/field_src+CO/G2000301.csv') 
 df_src_G1G2 = pd.read_csv('220131_H2S_high_T/field_src_G1+G2/G2000301.csv') 
 df_src_meteo = pd.read_csv('220131_H2S_high_T/field_src+meteo/G2000309.csv')
 
 
-pd.set_option('display.max_columns', 100)
-pd.set_option('display.max_rows', 100)
+pd.set_option('display.max_columns', 1000)
+pd.set_option('display.max_rows',100000)
 
 
 # print(df_raw.info())
-# print(df_raw.head(5))
+print(df_src.info())
+
+
+# df_raw['Tm'] = (df_raw['H2St'] + df_raw['SO2t'])/2.0
+
+# df_raw['dT'] = df_raw['T'] - df_raw['Tm'] 
+
+
+# print(df_raw[['date','T','TSRC','datesrc']].head(9000))
+
+df_raw['Tm'] = (df_raw['COt'] + df_raw['NO2t'] + df_raw['O3t'])/3.0
+df_raw['dT'] = df_raw['T'] - (df_raw['COt'] + df_raw['NO2t'] + df_raw['O3t'])/3.0 
+
+df_raw['TSRC'] = df_src['T']
+df_raw['datesrc'] = df_src['date']
+
+# print(df_raw[['date','T','Tm','TSRC','datesrc']].head(5000))
+# print(df_raw[['date','T','Tm']].head(10000))
+print(df_src[['date','T']].head(10000))
+# print(df_raw[['COt','NO2t','O3t','T','dT','Tm']].head(1000))
 # print(df_raw.columns)
+
 
  # 0   date    31150 non-null  object 
  # 1   COop1   30977 non-null  float64
@@ -47,12 +67,9 @@ pd.set_option('display.max_rows', 100)
  # 13  T       17495 non-null  float64
  # dtypes: float64(13), object(1)
 
-
-
-
-print(df_src.info())
-print(df_src.head(5))	
-print(df_src.columns)
+# print(df_src.info())
+# print(df_src.head(5))	
+# print(df_src.columns)
 
 #  #   Column  Non-Null Count  Dtype  
 # ---  ------  --------------  -----  
@@ -128,38 +145,38 @@ print(df_src.columns)
 
 # feat_float = list(df_raw.columns)
 # del feat_float[0]
-# del feat_float[-1]
-
-feat_float_src = list(df_src.columns)
-del feat_float_src[0]
 
 
+# # feat_float_src = list(df_src.columns)
+# # del feat_float_src[0]
 
 
 
-# df_raw[feat_float].plot(kind='density', subplots=True, layout=(4, 3), sharex=False, figsize=(12,10))
+
+
+# df_raw[feat_float].plot(kind='density', subplots=True, layout=(4, 4), sharex=False, figsize=(12,12))
 # plt.savefig('data_fig/density_raw.png')
 # # plt.show()
 
-# _, axes = plt.subplots(4, 3, sharey = True, figsize = (15, 15))
+# _, axes = plt.subplots(4, 4, sharey = True, figsize = (16, 16))
 # for value, c in enumerate(feat_float): 
-# 	sns.violinplot(x = c, data = df_raw, ax = axes[value//3][value % 3]);
+# 	sns.violinplot(x = c, data = df_raw, ax = axes[value//4][value % 4]);
 # plt.savefig('data_fig/violin_raw.png')
 
 
 
-df_src[feat_float_src].plot(kind='density', subplots=True, layout=(3, 3), sharex=False, figsize=(12,12))
-plt.savefig('data_fig/density_src.png')
-# plt.show()
+# # df_src[feat_float_src].plot(kind='density', subplots=True, layout=(3, 3), sharex=False, figsize=(12,12))
+# # plt.savefig('data_fig/density_src.png')
+# # # plt.show()
 
-_, axes = plt.subplots(3, 3, sharey = True, figsize = (12, 12))
-for value, c in enumerate(feat_float_src): 
-	sns.violinplot(x = c, data = df_src, ax = axes[value//3][value % 3]);
-plt.savefig('data_fig/violin_src.png')
+# # _, axes = plt.subplots(3, 3, sharey = True, figsize = (12, 12))
+# # for value, c in enumerate(feat_float_src): 
+# # 	sns.violinplot(x = c, data = df_src, ax = axes[value//3][value % 3]);
+# # plt.savefig('data_fig/violin_src.png')
 
 
 
-										# Corr
+# 										# Corr
 
 
 # plt.subplots(sharey = True, figsize = (12, 10))
@@ -179,38 +196,38 @@ plt.savefig('data_fig/violin_src.png')
 
 
 
-plt.subplots(sharey = True, figsize = (12, 10))
-c_m_pear = df_src[feat_float_src].corr(method='pearson')
-sns.heatmap(c_m_pear)
-plt.savefig('data_fig/corr_pear_src.png')
+# # plt.subplots(sharey = True, figsize = (12, 10))
+# # c_m_pear = df_src[feat_float_src].corr(method='pearson')
+# # sns.heatmap(c_m_pear)
+# # plt.savefig('data_fig/corr_pear_src.png')
 
-plt.subplots(sharey = True, figsize = (12, 10))
-c_m_kend = df_src[feat_float_src].corr(method='kendall')
-sns.heatmap(c_m_kend)
-plt.savefig('data_fig/corr_kend_src.png')
+# # plt.subplots(sharey = True, figsize = (12, 10))
+# # c_m_kend = df_src[feat_float_src].corr(method='kendall')
+# # sns.heatmap(c_m_kend)
+# # plt.savefig('data_fig/corr_kend_src.png')
 
-plt.subplots(sharey = True, figsize = (12, 10))
-c_m_spea = df_src[feat_float_src].corr(method='spearman')
-sns.heatmap(c_m_spea)
-plt.savefig('data_fig/corr_spea_src.png')
-
-
+# # plt.subplots(sharey = True, figsize = (12, 10))
+# # c_m_spea = df_src[feat_float_src].corr(method='spearman')
+# # sns.heatmap(c_m_spea)
+# # plt.savefig('data_fig/corr_spea_src.png')
 
 
 
-									# Scatterplot
 
 
-# sns.jointplot(x = 'NO2op1', y = 'NO2op2', data = df_raw, kind = 'scatter');
-# sns.jointplot('NO2op1', 'NO2op2', data = df_raw, kind = "kde", color = "g");
+# 									# Scatterplot
 
-						# Scatterplot matrix - Матрица диаграммы рассеяния
+
+# # sns.jointplot(x = 'NO2op1', y = 'NO2op2', data = df_raw, kind = 'scatter');
+# # sns.jointplot('NO2op1', 'NO2op2', data = df_raw, kind = "kde", color = "g");
+
+# 						# Scatterplot matrix - Матрица диаграммы рассеяния
 
 # sns.pairplot(df_raw[feat_float])
 # plt.savefig('data_fig/corr_Scatterplot_raw.png')
 
-sns.pairplot(df_src[feat_float_src])
-plt.savefig('data_fig/corr_Scatterplot_src.png')
+# # sns.pairplot(df_src[feat_float_src])
+# # plt.savefig('data_fig/corr_Scatterplot_src.png')
 
 
 
@@ -224,17 +241,17 @@ plt.savefig('data_fig/corr_Scatterplot_src.png')
 # 	y = df_raw[collumn]
 # 	plt.plot(x,y)
 
-df_src['datetime'] = df_src['date'].map(lambda x: datetime.datetime.strptime(str(x), "%Y-%m-%d %H:%M:%S"))
-x = df_src['datetime']
-for collumn in feat_float_src:
-	plt.subplots(sharey = True, figsize = (12, 10))
-	plt.suptitle(collumn)
-	y = df_src[collumn]
-	plt.plot(x,y)
+# # df_src['datetime'] = df_src['date'].map(lambda x: datetime.datetime.strptime(str(x), "%Y-%m-%d %H:%M:%S"))
+# # x = df_src['datetime']
+# # for collumn in feat_float_src:
+# # 	plt.subplots(sharey = True, figsize = (12, 10))
+# # 	plt.suptitle(collumn)
+# # 	y = df_src[collumn]
+# # 	plt.plot(x,y)
 
 
 
 
 
 
-plt.show()
+# plt.show()
