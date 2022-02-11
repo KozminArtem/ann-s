@@ -29,9 +29,9 @@ print(mpl.__version__)  #> 3.0.0
 print(sns.__version__)  #> 0.9.0
 
 
-df_src = pd.read_csv('220131_H2S_high_T/field_src/G10002A3.csv')	
+# df_src = pd.read_csv('220131_H2S_high_T/field_src/G10002A3.csv')	
 
-# df_src = pd.read_csv('220131_H2S_high_T/field_src/G2000301.csv')    
+df_src = pd.read_csv('220131_H2S_high_T/field_src/G2000301.csv')    
 
 
 
@@ -48,22 +48,70 @@ del feat_float_src[-1]
 
 df_src['datetime'] = df_src['date'].map(lambda x: datetime.datetime.strptime(str(x), "%Y-%m-%d %H:%M:%S"))
 
-x = df_src['datetime']
+# x = df_src['datetime']
 
 
                     # Scatteplot
 
 colors = [plt.cm.tab10(i/float(len(feat_float_src)-1)) for i in range(len(feat_float_src))]
 
+# for i, column in enumerate(feat_float_src):
+#     plt.figure(figsize=(16, 10), dpi= 80, facecolor='w', edgecolor='k')
+#     plt.scatter('T', column, data = df_src, s=20, c = colors[i], label=str(column))
+#     plt.title("Scatterplot: " + str(column) + "(T)", fontsize=22)
+#     plt.savefig('data_T_fig/scatter_' + str(column) + '.png')
 
-for i, column in enumerate(feat_float_src):
-    plt.figure(figsize=(16, 10), dpi= 80, facecolor='w', edgecolor='k')
-    plt.scatter('T', column, data = df_src, s=20, c = colors[i], label=str(column))
-    plt.title("Scatterplot: " + str(column) + "(T)", fontsize=22)
-    plt.savefig('data_T_fig/scatter_' + str(column) + '.png')
+
+# plt.xticks(fontsize=12)
+# plt.yticks(fontsize=12)
+# plt.legend(fontsize=12)    
 
 
-plt.xticks(fontsize=12)
-plt.yticks(fontsize=12)
-plt.legend(fontsize=12)    
+                    # Best fit
+
+# sns.set_style("white")
+# for i, column in enumerate(feat_float_src):
+#     # plt.figure(figsize=(16, 10), dpi= 80, facecolor='w', edgecolor='k')
+#     # gridobj = sns.lmplot(x = 'T', y = str(column), 
+#     #                      data=df_src, 
+#     #                      height=7, 
+#     #                      robust=True, 
+#     #                      palette='Set1', 
+#     #                      col=colors[i],
+#     #                      scatter_kws=dict(s=60, linewidths=.7, edgecolors='black'))
+
+#     gridobj = sns.lmplot(x = 'T', y = str(column), 
+#                          data=df_src,height=7,robust=True,scatter_kws=dict(s=60, linewidths=.7, edgecolors='black'))
+
+#     plt.title("Best Fit: " + str(column) + "(T)", fontsize=22)
+#     print(column)
+#     plt.savefig('data_T_fig/BestFit_' + str(column) + '.png')
+
+# plt.xticks(fontsize=12)
+# plt.yticks(fontsize=12)
+# plt.legend(fontsize=12)   
+
+#                     # Counts plot
+
+# for i, column in enumerate(feat_float_src):
+
+#     df_counts = df_src.groupby(['T', column]).size().reset_index(name='counts')
+#     fig, ax = plt.subplots(figsize=(16,10), dpi= 80)    
+#     sns.scatterplot(x = 'T', y = column, data = df_counts, size=df_counts.counts*2, ax=ax)
+
+#     plt.title("Counts plot: " + str(column) + "(T)", fontsize=22)
+
+#     print(column)
+#     # plt.savefig('data_T_fig/CountPlot_' + str(column) + '.png')
+
+# plt.xticks(fontsize=12)
+# plt.yticks(fontsize=12)
+# plt.legend(fontsize=12)       
+
+
+
+
+
+
+
 plt.show()  
