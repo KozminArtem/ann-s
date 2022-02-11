@@ -29,9 +29,9 @@ print(mpl.__version__)  #> 3.0.0
 print(sns.__version__)  #> 0.9.0
 
 
-# df_src = pd.read_csv('220131_H2S_high_T/field_src/G10002A3.csv')	
+df_src = pd.read_csv('220131_H2S_high_T/field_src/G10002A3.csv')	
 
-df_src = pd.read_csv('220131_H2S_high_T/field_src/G2000301.csv')    
+# df_src = pd.read_csv('220131_H2S_high_T/field_src/G2000301.csv')    
 
 
 
@@ -60,7 +60,7 @@ for i, column in enumerate(feat_float_src):
     plt.figure(figsize=(16, 10), dpi= 80, facecolor='w', edgecolor='k')
     plt.scatter('T', column, data = df_src, s=20, c = colors[i], label=str(column))
     plt.title("Scatterplot: " + str(column) + "(T)", fontsize=22)
-    plt.savefig('data_T_fig/' + str(column) + '.png')
+    plt.savefig('data_T_fig/scatter_' + str(column) + '.png')
 
 
 plt.xticks(fontsize=12)
