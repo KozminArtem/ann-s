@@ -16,19 +16,31 @@ import datetime
 								# Знакомство с файлами
 
 
-df_raw = pd.read_csv('220131_H2S_high_T/field_raw/G10002F1.csv')										
-df_src = pd.read_csv('220131_H2S_high_T/field_src/G2000315.csv')	
-df_src_CO = pd.read_csv('220131_H2S_high_T/field_src+CO/G2000301.csv') 
-df_src_G1G2 = pd.read_csv('220131_H2S_high_T/field_src_G1+G2/G2000301.csv') 
+# df_raw = pd.read_csv('220131_H2S_high_T/field_raw/G2000301.csv')										
+df_src_G2 = pd.read_csv('220131_H2S_high_T/field_src/G2000309.csv')	
+df_src_G1 = pd.read_csv('220131_H2S_high_T/field_src/G10002F6.csv')
+# df_src_CO = pd.read_csv('220131_H2S_high_T/field_src+CO/G2000301.csv') 
+# df_src_G1G2 = pd.read_csv('220131_H2S_high_T/field_src_G1+G2/G2000301.csv') 
 df_src_meteo = pd.read_csv('220131_H2S_high_T/field_src+meteo/G2000309.csv')
 
 
-pd.set_option('display.max_columns', 1000)
+pd.set_option('display.max_columns', 15)
 pd.set_option('display.max_rows',100000)
 
 
 # print(df_raw.info())
-print(df_src.info())
+print(df_src_G2.info())
+print(df_src_G2.head(20))
+# print(df_src.last(5))
+
+# print(df_src_G1.info())
+# print(df_src_G1.head(20))
+
+print(df_src_meteo.info())
+print(df_src_meteo.head(20))
+# print(df_src_CO.last(5))
+
+print() 
 
 
 # df_raw['Tm'] = (df_raw['H2St'] + df_raw['SO2t'])/2.0
@@ -38,15 +50,18 @@ print(df_src.info())
 
 # print(df_raw[['date','T','TSRC','datesrc']].head(9000))
 
-df_raw['Tm'] = (df_raw['COt'] + df_raw['NO2t'] + df_raw['O3t'])/3.0
-df_raw['dT'] = df_raw['T'] - (df_raw['COt'] + df_raw['NO2t'] + df_raw['O3t'])/3.0 
+# df_raw['Tm'] = (df_raw['COt'] + df_raw['NO2t'] + df_raw['O3t'])/3.0
+# df_raw['dT'] = df_raw['T'] - (df_raw['COt'] + df_raw['NO2t'] + df_raw['O3t'])/3.0 
 
-df_raw['TSRC'] = df_src['T']
-df_raw['datesrc'] = df_src['date']
+# df_raw['TSRC'] = df_src['T']
+# df_raw['datesrc'] = df_src['date']
 
 # print(df_raw[['date','T','Tm','TSRC','datesrc']].head(5000))
 # print(df_raw[['date','T','Tm']].head(10000))
-print(df_src[['date','T']].head(10000))
+# print(df_src[['date','T']].head(10000))
+
+
+
 # print(df_raw[['COt','NO2t','O3t','T','dT','Tm']].head(1000))
 # print(df_raw.columns)
 
