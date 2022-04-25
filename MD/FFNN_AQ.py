@@ -83,7 +83,7 @@ for feat in feat_CO:
 
 
 
-# df_new = df_new[df_new['CO(GT)'] > 0.5]
+df_new = df_new[df_new['CO(GT)'] > 0.4]
 # df_new = df_new[df_new['CO(GT)'] < 5.0]
 
 print(df_new['CO(GT)'].min())
@@ -474,6 +474,8 @@ def learning_curves(estimator, data, target, train_sizes, cv, stringg):
     plt.title(title, fontsize = 18, y = 1.03)
     plt.legend()
     # plt.ylim(0,40)
+    plt.savefig('fig_LinPol/MSELearnCurv' + str(stringg) +'.png')
+
 
 
     train_sizes, train_scores, validation_scores = learning_curve(
@@ -491,6 +493,7 @@ def learning_curves(estimator, data, target, train_sizes, cv, stringg):
     title = 'Learning curves for a ' + str(estimator).split('(')[0] + str(stringg)+' model, cv_par = ' + str(cv)
     plt.title(title, fontsize = 18, y = 1.03)
     plt.legend()
+    plt.savefig('fig_LinPol/MAPELearnCurv' + str(stringg) +'.png')
     
 
 
@@ -504,7 +507,7 @@ def learning_curves(estimator, data, target, train_sizes, cv, stringg):
 
 
 
-List_Train_Size = np.arange(0.01,1.0,0.02)
+List_Train_Size = np.arange(0.01,1.0,0.01)
 
 
 
@@ -569,9 +572,14 @@ y_all = y_train.append(y_test, ignore_index=True)
 lr = LinearRegression()
 lr.fit(X_train_scaled_poly, y_train)
 
-plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "sc +h P_Deg = " + str(Degree),  plot_intervals=True,\
+plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "hour_P" + str(Degree) + "_04",  plot_intervals=True,\
                  y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test, plot_diff = True)
 plotCoefficients(lr, X_train=X_train_scaled_poly)
+
+
+
+learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, 10, 'hour_P2_04')
+
 
 
 # learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size,10, 'hour')
@@ -670,17 +678,14 @@ y_all = y_train.append(y_test, ignore_index=True)
 lr = LinearRegression()
 lr.fit(X_train_scaled_poly, y_train)
 
-plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "sc MeanCO(h) P_Deg = " + str(Degree),  plot_intervals=True,\
+plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "MeanH_P" + str(Degree) + "_04",  plot_intervals=True,\
                  y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test, plot_diff = True)
 plotCoefficients(lr, X_train=X_train_scaled_poly)
 
 
+learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, 10, 'MeanH_P2_04')
 
 
-
-
-
-# learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, 10, "sc MeanCO(h)")
 
 
 
