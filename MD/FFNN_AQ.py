@@ -191,8 +191,14 @@ def plotModelResults(
     prediction = model.predict(X_test)
 
     plt.figure(figsize=(15, 7))
-    plt.plot(time_test, prediction, label="prediction", marker = 'o',markersize=3, linestyle = 'None', color = "green")
-    plt.plot(time_test, y_test.values, label="actual",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+    # plt.plot(time_test, prediction, label="prediction", marker = 'o',markersize=3, linestyle = 'None', color = "green")
+    # plt.plot(time_test, y_test.values, label="actual",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+
+    plt.plot(time_test, prediction, "g", label="prediction", linewidth=2.0)
+    plt.plot(time_test, y_test.values, label="actual", linewidth=2.0)
+    plt.savefig('fig_LinPol/Pred_True_' + str(string) +'.png')
+
+
 
     # if plot_intervals:
     #     cv = cross_val_score(
@@ -267,6 +273,9 @@ def plotModelResults(
         plt.legend(loc="best")
         plt.tight_layout()
         plt.grid(True)
+        plt.savefig('fig_LinPol/Pred(True)' + str(string) +'.png')
+
+
 
         # plt.figure(figsize = (16,10))
         # sns.boxplot(x = 'CO_true', y = 'Pred', data = temp)
@@ -292,6 +301,9 @@ def plotModelResults(
 
         plt.figure(figsize = (16,10))
         sns.boxplot(x = 'CO_true', y = 'MSE', data = temp)
+        plt.savefig('fig_LinPol/Box_MSE' + str(string) +'.png')
+
+
 
         plt.figure(figsize=(15, 7))
         plt.plot(temp['T'], array_mse, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
@@ -344,6 +356,8 @@ def plotModelResults(
 
         plt.figure(figsize = (16,10))
         sns.boxplot(x = 'CO_true', y = 'MAPE', data = temp)
+        plt.savefig('fig_LinPol/Box_MAPE' + str(string) +'.png')
+
 
         plt.figure(figsize=(15, 7))
         plt.plot(temp['T'], array_mape, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
