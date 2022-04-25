@@ -19,17 +19,16 @@ import datetime
 df_src_AQ = pd.read_csv('AirQualityUCI/AirQualityUCI.csv', sep = ';') 
 
 
+
+
 # df_src_G1G2 = df_src_G1G2.iloc[2000:20000]
 
 pd.set_option('display.max_columns', 20)
 pd.set_option('display.max_rows',100000)
 
 
-print(df_src_AQ.info())
-print(df_src_AQ.head(20))
-
-
-
+# print(df_src_AQ.info())
+# print(df_src_AQ.head(-1))
 
 
 										# Violin Plot
@@ -48,7 +47,8 @@ for column in feat_float:
 
 
 
-print(feat_float)
+
+# print(feat_float)
 
 df_src_AQ[feat_float].plot(kind='density', subplots=True, layout=(4, 4), sharex=False, figsize=(16,16))
 # # plt.savefig('data_fig/density_raw.png')
@@ -73,9 +73,7 @@ df_src_diffmean = pd.DataFrame()
 
 
 
-# df_src_diffmean['datetime'] = df_src_AQ.Date.map(lambda x: str(x)) + " " + df_src_AQ.Time.map(lambda x: str(x))
 
-# df_src_diffmean['datetime'].astype(str)
 
 df_src_AQ['Date'] = pd.to_datetime(df_src_AQ['Date'], format='%d/%m/%Y')
 
@@ -83,22 +81,37 @@ df_src_AQ['Date'] = pd.to_datetime(df_src_AQ['Date'], format='%d/%m/%Y')
 df_src_AQ['Time'] = pd.to_datetime(df_src_AQ['Time'], format='%H.%M.%S')
 
 
+df_src_AQ['Date'] = df_src_AQ['Date'].dt.date
+
+df_src_AQ['Time'] = df_src_AQ['Time'].dt.time
+
+
+df_src_AQ = df_src_AQ.dropna(subset=['Date', 'Time'])
+
+# print(datetime.datetime.combine(df_src_AQ['Date'][0],df_src_AQ['Time'][0]))
+
+df_src_diffmean['datetime'] = pd.Series([datetime.datetime.combine(df_src_AQ['Date'][i], df_src_AQ['Time'][i]) for i in range(df_src_AQ['Date'].size) if df_src_AQ['Time'][i]])
+
+
+
 print(df_src_AQ.info())
 print(df_src_AQ.head(20))
 
 
-df_src_diffmean['datetime'] = df_src_AQ['Date'] + df_src_AQ['Time']
-# print(df_src_diffmean.datetime.head(1000))
 
 
 
-# df_src_diffmean['datetime'] =  df_src_diffmean.datetime.map(lambda x: datetime.datetime.strptime(str(x), "%d/%m/%Y %H.%M.%S")) 
+
 
 
 
 for collumn in feat_float:
-    df_src_diffmean[collumn] = df_src_AQ[collumn] - df_src_AQ[collumn].mean()
-    df_src_diffmean[collumn] = df_src_diffmean[collumn]/(df_src_diffmean[collumn].max()-df_src_diffmean[collumn].min())
+    df_src_diffmean[collumn] = df_src_AQ[collumn]
+
+
+# for collumn in feat_float:
+#     df_src_diffmean[collumn] = df_src_AQ[collumn] - df_src_AQ[collumn].mean()
+#     df_src_diffmean[collumn] = df_src_diffmean[collumn]/(df_src_diffmean[collumn].max()-df_src_diffmean[collumn].min())
     
 
 
@@ -206,5 +219,31 @@ plt.title("Spearman correlation (norm data)", fontsize=22)
 # sns.heatmap(MD, yticklabels = feat_float_diff, xticklabels = feat_float_diff, annot=True)
 # plt.title("Manhattan distance (norm data)", fontsize=22)
 # # plt.savefig('data_H2SCO_fig/dist_manh_diff.png')
+
+
+
+
+
+
+
+feat_CO = ['CO(GT)','PT08.S1(CO)','T', 'RH']
+
+for feature in feat_CO:
+    df_src_diffmean = df_src_diffmean[df_src_diffmean[feature] > -100]
+
+x = df_src_diffmean['datetime']
+
+plt.subplots(sharey = True, figsize = (12, 12))
+
+for collumn_diff in feat_CO:
+    # plt.suptitle(collumn_diff)
+    y = df_src_diffmean[collumn_diff]
+    plt.plot(x,y,label=str(collumn_diff))
+
+
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+plt.legend(fontsize=12)   
+
 
 plt.show()
