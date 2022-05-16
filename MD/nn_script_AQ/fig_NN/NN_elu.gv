@@ -5,56 +5,56 @@ digraph g {
 		node [color="#2ecc71" fontcolor="#2ecc71" shape=circle style=filled]
 		color=white
 		1
-		label="My first neural network
+		label="NN
 
 
 
 Input Layer"
 		rank=same
 		2
-		label="My first neural network
+		label="NN
 
 
 
 Input Layer"
 		rank=same
 		3
-		label="My first neural network
+		label="NN
 
 
 
 Input Layer"
 		rank=same
 		4
-		label="My first neural network
+		label="NN
 
 
 
 Input Layer"
 		rank=same
 		5
-		label="My first neural network
+		label="NN
 
 
 
 Input Layer"
 		rank=same
 		6
-		label="My first neural network
+		label="NN
 
 
 
 Input Layer"
 		rank=same
 		7
-		label="My first neural network
+		label="NN
 
 
 
 Input Layer"
 		rank=same
 		8
-		label="My first neural network
+		label="NN
 
 
 

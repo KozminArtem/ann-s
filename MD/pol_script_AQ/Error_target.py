@@ -25,7 +25,7 @@ import datetime
 from tensorflow import keras
 
 
-df = pd.read_csv('AirQualityUCI/AirQualityUCI.csv', sep = ';') 
+df = pd.read_csv('../AirQualityUCI/AirQualityUCI.csv', sep = ';') 
 
 
 features = list(df.columns)
@@ -70,7 +70,7 @@ list_delete = ['T^2','R_NM^2']
 # list_delete = ['T^2','PT08.S2(NMHC)^2']
 
 
-T_size = 0.5
+T_size = 0.9
 
 
 
@@ -83,7 +83,7 @@ for feat in feat_CO:
 
 
 
-df_new = df_new[df_new['CO(GT)'] > 0.4]
+# df_new = df_new[df_new['CO(GT)'] > 0.4]
 # df_new = df_new[df_new['CO(GT)'] < 5.0]
 
 print(df_new['CO(GT)'].min())
@@ -196,7 +196,7 @@ def plotModelResults(
 
     plt.plot(time_test, prediction, "g", label="prediction", linewidth=2.0)
     plt.plot(time_test, y_test.values, label="actual", linewidth=2.0)
-    plt.savefig('fig_LinPol/Pred_True_' + str(string) +'.png')
+    # plt.savefig('fig_LinPol/Pred_True_' + str(string) +'.png')
 
 
 
@@ -256,6 +256,16 @@ def plotModelResults(
     temp['Pred'] = prediction
     # temp['hour'] = X_test['hour']
     # temp['COmean'] = X_test['COmean']
+    print(len(time_test.dt.month))
+    print(len(prediction))
+    print(type(time_test.dt.month))
+    print(type(prediction))
+
+
+    temp['Month'] = np.array(time_test.dt.month)
+    print(temp['Month'])
+    print(temp['GRE'].mean())
+
 
     if plot_diff:
         # plt.figure(figsize=(15, 7))
@@ -268,12 +278,16 @@ def plotModelResults(
 
         plt.figure(figsize=(15, 7))
         plt.plot(np.linspace(0, 10),np.linspace(0, 10)) 
+
         plt.plot(y_test.values, prediction, label="Pred(True)",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.plot(np.linspace(0, 10),1.25*np.linspace(0, 10), color = "red")
+        plt.plot(np.linspace(0, 10),0.75*np.linspace(0, 10), color = "red")
+
         plt.title("Pred(True)" + str(string))
         plt.legend(loc="best")
         plt.tight_layout()
         plt.grid(True)
-        plt.savefig('fig_LinPol/Pred(True)' + str(string) +'.png')
+        # plt.savefig('fig_LinPol/Pred(True)' + str(string) +'.png')
 
 
 
@@ -301,7 +315,7 @@ def plotModelResults(
 
         plt.figure(figsize = (16,10))
         sns.boxplot(x = 'CO_true', y = 'MSE', data = temp)
-        plt.savefig('fig_LinPol/Box_MSE' + str(string) +'.png')
+        # plt.savefig('fig_LinPol/Box_MSE' + str(string) +'.png')
 
 
 
@@ -326,8 +340,8 @@ def plotModelResults(
         plt.tight_layout()
         plt.grid(True)
 
-        # plt.figure(figsize = (16,10))
-        # sns.boxplot(x = 'COmean', y = 'MSE', data = temp)
+        plt.figure(figsize = (16,10))
+        sns.boxplot(x = 'Month', y = 'MSE', data = temp)
 
 
 
@@ -356,29 +370,35 @@ def plotModelResults(
 
         plt.figure(figsize = (16,10))
         sns.boxplot(x = 'CO_true', y = 'MAPE', data = temp)
-        plt.savefig('fig_LinPol/Box_MAPE' + str(string) +'.png')
+        # plt.savefig('fig_LinPol/Box_MAPE' + str(string) +'.png')
 
 
         plt.figure(figsize=(15, 7))
-        plt.plot(temp['T'], array_mape, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.plot(temp['T'], array_mape, label="MAPE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
         plt.title("MAPE(T)" + str(string))
         plt.legend(loc="best")
         plt.tight_layout()
         plt.grid(True)
 
         plt.figure(figsize=(15, 7))
-        plt.plot(temp['R_CO'], array_mape, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.plot(temp['R_CO'], array_mape, label="MAPE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
         plt.title("MAPE(R_CO)" + str(string))
         plt.legend(loc="best")
         plt.tight_layout()
         plt.grid(True)
 
         plt.figure(figsize=(15, 7))
-        plt.plot(temp['R_NM'], array_mape, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.plot(temp['R_NM'], array_mape, label="MAPE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
         plt.title("MAPE(R_NM)" + str(string))
         plt.legend(loc="best")
         plt.tight_layout()
         plt.grid(True)
+
+        plt.figure(figsize = (16,10))
+        sns.boxplot(x = 'Month', y = 'MAPE', data = temp)
+
+
+
 
         # plt.figure(figsize=(15, 7))
         # plt.plot(temp['hour'], array_mape, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
@@ -408,6 +428,14 @@ def plotModelResults(
         plt.legend(loc="best")
         plt.tight_layout()
         plt.grid(True)
+
+        # plt.figure(figsize = (16,10))
+        # sns.boxplot(x = 'Month', y = 'GRE', data = temp)
+
+
+        plt.figure(figsize = (16,10))
+        for mon in range(1,13):
+            plt.plot(mon, temp[temp['Month'] == mon]['GRE'].mean())
 
 
 
@@ -474,7 +502,7 @@ def learning_curves(estimator, data, target, train_sizes, cv, stringg):
     plt.title(title, fontsize = 18, y = 1.03)
     plt.legend()
     # plt.ylim(0,40)
-    plt.savefig('fig_LinPol/MSELearnCurv' + str(stringg) +'.png')
+    # plt.savefig('fig_LinPol/MSELearnCurv' + str(stringg) +'.png')
 
 
 
@@ -493,7 +521,7 @@ def learning_curves(estimator, data, target, train_sizes, cv, stringg):
     title = 'Learning curves for a ' + str(estimator).split('(')[0] + str(stringg)+' model, cv_par = ' + str(cv)
     plt.title(title, fontsize = 18, y = 1.03)
     plt.legend()
-    plt.savefig('fig_LinPol/MAPELearnCurv' + str(stringg) +'.png')
+    # plt.savefig('fig_LinPol/MAPELearnCurv' + str(stringg) +'.png')
     
 
 
@@ -684,233 +712,6 @@ plotCoefficients(lr, X_train=X_train_scaled_poly)
 
 
 learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, 10, 'MeanH_P2_04')
-
-
-
-
-
-
-
-from keras.preprocessing.text import Tokenizer
-from keras import models
-from keras import layers
-from sklearn.datasets import make_regression
-
-from sklearn import preprocessing
-
-from sklearn.model_selection import RepeatedKFold
-kfold = RepeatedKFold(n_splits=5, n_repeats=100)
-
-
-
-
-# Type_error = 'mape'
-Type_error = "mean_absolute_percentage_error"
-List_Error = ["mean_absolute_percentage_error"]
-
-
-
-
-# Type_func = 'relu'
-# Type_func = 'sigmoid'
-# Type_func = 'softmax'
-# Type_func = 'softplus' # 36.8%
-# Type_func = 'softsign'
-# Type_func = 'tanh'
-# Type_func = 'selu' # 52%
-# Type_func = 'elu' #70%
-# Type_func = 'exponential' #45%? 
-
-List_Function = ['linear', 'elu', 'relu', 'selu', 'sigmoid', 'tanh', 'exponential', 'softmax', 'softplus', 'softsign']
-
-
-# x = np.linspace(-10, 10)
-# plt.figure(figsize = (16,10))
-# plt.plot(x, keras.activations.linear(x)) 
-
-# plt.figure(figsize = (16,10))
-# plt.plot(x, keras.activations.elu(x)) 
-
-# plt.figure(figsize = (16,10))
-# plt.plot(x, keras.activations.relu(x)) 
-
-# plt.figure(figsize = (16,10))
-# plt.plot(x, keras.activations.selu(x)) 
-
-# plt.figure(figsize = (16,10))
-# plt.plot(x, keras.activations.sigmoid(x)) 
-
-# plt.figure(figsize = (16,10))
-# plt.plot(x, keras.activations.tanh(x)) 
-
-# plt.figure(figsize = (16,10))
-# plt.plot(x, keras.activations.exponential(x)) 
-
-
-
-
-
-
-
-
-
-Type_func = List_Function[0]
-
-Type_optimizer='adam'       # Type_optimizer='RMSprop'
-
-Number_epochs = 100
-
-
-network = models.Sequential()
-
-# Add fully connected layer with a ReLU activation function
-l_feat = X_train_scaled_poly.shape[1]
-
-network.add(layers.Dense(units=l_feat, activation=Type_func, input_shape=(l_feat,)))
-
-# Add fully connected layer with a ReLU activation function
-# network.add(layers.Dense(units=l_feat, activation=fu))
-
-# Add fully connected layer with no activation function
-network.add(layers.Dense(units=1, activation = Type_func))
-
-
-# Compile neural network
-network.compile(loss=Type_error, # Mean squared error
-                optimizer=Type_optimizer, # Optimization algorithm
-                metrics=[Type_error]) # Mean squared error
-
-# Train neural network
-history = network.fit(X_train_scaled_poly, # Features
-                      y_train, # Target vector
-                      epochs=Number_epochs, # Number of epochs
-                      verbose=0, # No output
-                      batch_size=100, # Number of observations per batch
-                      validation_data=(X_test_scaled_poly, y_test)) # Data for evaluation
-
-
-
-
-# prediction = network.predict(X_test_scaled_poly)
-
-# print(len(y_test), type(y_test))
-# print(len(prediction), type(prediction))
-
-
-
-# plotModelResults(network, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "network MeanCO(h) D = 2, fu = " +str(Type_func),  plot_intervals=True,\
-#                  y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
-
-
-# keras.utils.plot_model(
-#     network,
-#     to_file='model.png',
-#     show_shapes=True,
-#     show_dtype=True,
-#     show_layer_names=True,
-#     rankdir='TB',
-#     expand_nested=True,
-#     dpi=96,
-#     layer_range=None,
-#     show_layer_activations=True
-# )
-
-# from ann_visualizer.visualize import ann_viz
-
-
-
-
-# ann_viz(network, view = True, title="My first neural network")
-
-
-
-
-
-
-
-# # # plotModelResults(network, X_train_scaled_poly, X_test_scaled_poly, fu)
-# keras.backend.clear_session()
-#     # plotCoefficients(network)
-
-
-
-
-
-
-
-
-
-# data["hour"] = df_new['datetime'].dt.hour
-# data["weekday"] = df_new['datetime'].dt.weekday
-# data["is_weekend"] = df_new['datetime'].dt.weekday.isin([5, 6]) * 1
-# data.tail()
-
-# from sklearn.preprocessing import StandardScaler
-
-# scaler = StandardScaler()
-
-# y = data.dropna()[feat_target]
-# X = data.dropna().drop([feat_target], axis=1)
-
-# X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=0.3)
-
-# time_train = X_train.dropna()['datetime']
-# time_test = X_test.dropna()['datetime']
-
-# X_train = X_train.dropna().drop(['datetime'], axis=1)
-# X_test = X_test.dropna().drop(['datetime'], axis=1)
-
-# print(X_train.head(5))
-# print(y_train.head(5))
-
-# X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train))
-# X_test_scaled = pd.DataFrame(scaler.transform(X_test))
-
-# print(X_train_scaled.head(5))
-# print(y_train.head(5))
-# print(X_train_scaled.shape[1])
-
-
-
-
-
-
-
-
-
-# for fu in List_Function:
-
-
-#     # Start neural network
-#     network_s = models.Sequential()
-
-#     # Add fully connected layer with a ReLU activation function
-#     network_s.add(layers.Dense(units=l_feat+3, activation=Type_func, input_shape=(X_train_scaled.shape[1],)))
-
-#     # # Add fully connected layer with a ReLU activation function
-#     network_s.add(layers.Dense(units=l_feat+3, activation=Type_func))
-
-#     # Add fully connected layer with no activation function
-#     network_s.add(layers.Dense(units=1, activation = 'relu'))
-
-
-
-#     # Compile neural network
-#     network_s.compile(loss=Type_error, # Mean squared error
-#                     optimizer=Type_optimizer, # Optimization algorithm
-#                     metrics=[Type_error]) # Mean squared error
-
-#     # Train neural network
-#     history_s = network_s.fit(X_train_scaled, # Features
-#                           y_train, # Target vector
-#                           epochs=Number_epochs, # Number of epochs
-#                           verbose=0, # No output
-#                           batch_size=100, # Number of observations per batch
-#                           validation_data=(X_test_scaled, y_test)) # Data for evaluation
-
-#     plotModelResults(network_s, X_train_scaled, X_test_scaled, (fu+str(" scaled" )))
-
-#     keras.backend.clear_session()
 
 
 
