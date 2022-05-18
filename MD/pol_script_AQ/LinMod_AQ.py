@@ -1,3 +1,6 @@
+# Первая попытка анализа данных, построение линейных, L1, L2 регуляризаций моделей и XGBR бустинга
+# Исправлена ошибка в y_true,prediction
+
 import matplotlib.pyplot as plt  # plots
 import numpy as np  # vectors and matrices
 import pandas as pd  # tables and data manipulations
@@ -40,28 +43,17 @@ for column in features:
 
 
 df['Date'] = pd.to_datetime(df['Date'], format='%d/%m/%Y')
-
-
 df['Time'] = pd.to_datetime(df['Time'], format='%H.%M.%S')
-
-
 df['Date'] = df['Date'].dt.date
-
 df['Time'] = df['Time'].dt.time
 
-
 df = df.dropna(subset=['Date', 'Time'])
-
-
 
 df_new = pd.DataFrame()
 df_new['datetime'] = pd.Series([datetime.datetime.combine(df['Date'][i], df['Time'][i]) for i in range(df['Date'].size) if df['Time'][i]])
 
 for feat in features:
     df_new[feat] = df[feat]
-
-
-
 
 # feat_CO = ['PT08.S1(CO)','T','RH', 'CO(GT)']
 # лучшие результаты на 28%
@@ -72,20 +64,12 @@ for feat in features:
 
 # feat_CO = ['T','CO(GT)']
 
-
-
 feat_CO = ['PT08.S1(CO)','T', 'RH', 'PT08.S2(NMHC)', 'PT08.S3(NOx)', 'PT08.S4(NO2)', 'PT08.S5(O3)', 'NO2(GT)']
 # лучшие результаты на 24.94% (L2 scalled)
-
 
 # feat_CO = ['T','RH', 'PT08.S4(NO2)', 'NO2(GT)']
 
 # feat_CO = ['T','CO(GT)']
-
-
-
-
-
 
 for feat in feat_CO:
     df_new = df_new[df_new[feat] > -100]
@@ -103,9 +87,7 @@ for feat in feat_CO:
 
 # plt.show()
 
-
 																		# linear regression
-
 
 data = pd.DataFrame(df_new[['datetime'] + feat_CO].copy())
 print(data.tail(7))
@@ -114,12 +96,8 @@ print(data.tail(7))
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score
 
-
-
 def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
-
-
 
 # for time-series cross-validation set 5 folds
 tscv = TimeSeriesSplit(n_splits=5)
@@ -170,9 +148,7 @@ X_test = X_test.dropna().drop(['datetime'], axis=1)
 
 
 print(X_train)
-
 print(y_train)
-
 print(time_train)
 
 
@@ -180,10 +156,6 @@ print(time_train)
 # machine learning in two lines
 lr = LinearRegression()
 lr.fit(X_train, y_train)
-
-
-
-
 
 def plotModelResults(
     model, X_train=X_train, X_test=X_test, plot_intervals=False, plot_anomalies=False, time_test = time_test, time_train = time_train
@@ -219,14 +191,11 @@ def plotModelResults(
             anomalies[y_test > upper] = y_test[y_test > upper]
             plt.plot(time_test, anomalies, "o", markersize=10, label="Anomalies")
 
-
-
-    error = mean_absolute_percentage_error(prediction, y_test)
+    error = mean_absolute_percentage_error(y_test, prediction)
     plt.title("Mean absolute percentage error {0:.2f}%".format(error))
     plt.legend(loc="best")
     plt.tight_layout()
     plt.grid(True)
-
 
 def plotCoefficients(model):
     """
@@ -268,8 +237,6 @@ X = data.dropna().drop(['NO2(GT)'], axis=1)
 X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=0.3)
 
 
-
-
 time_train = X_train.dropna()['datetime']
 time_test = X_test.dropna()['datetime']
 
@@ -288,18 +255,6 @@ lr.fit(X_train_scaled, y_train)
 plotModelResults(lr, X_train=X_train_scaled, X_test=X_test_scaled, plot_intervals=True)
 plotCoefficients(lr)
 
-
-
-
-
-
-
-
-
-
-
-
-
 from sklearn.linear_model import LassoCV, RidgeCV
 
 ridge = RidgeCV(cv=tscv)
@@ -314,8 +269,6 @@ plotModelResults(
 )
 plotCoefficients(ridge)
 
-
-
 lasso = LassoCV(cv=tscv)
 lasso.fit(X_train_scaled, y_train)
 
@@ -328,11 +281,7 @@ plotModelResults(
 )
 plotCoefficients(lasso)
 
-
-
-                        # BOOSTING
-
-
+                                            # BOOSTING
 
 from xgboost import XGBRegressor
 
@@ -349,16 +298,4 @@ plotModelResults(
     plot_anomalies=True,
 )
 
-
-
-
-
-
 plt.show()
-
-
-
-
-
-
-

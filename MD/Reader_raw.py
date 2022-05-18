@@ -1,18 +1,15 @@
-# отключим всякие предупреждения Anaconda
+# Анализ rooftop_raw
+
 import warnings
 warnings.filterwarnings('ignore')
 import seaborn as sns
 sns.set()
-
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-
 from pylab import rcParams
 rcParams['figure.figsize'] = 10, 8 
 import datetime
-
-
 # df_2 = pd.read_csv('rooftop_raw/G10002F1.csv')
 # df_3 = pd.read_csv('rooftop_raw/G1000317.csv')
 # df_NO2 = pd.read_csv('rooftop_raw/Optec_NO2.csv')
@@ -26,10 +23,8 @@ import datetime
 # print(data_7.info())
 # print(data_7.head(5))
 # print(data_8.info())
-# print(data_8.head(5))
-						
-										# G10002A3
-
+# print(data_8.head(5))	
+									# G10002A3
 df_1 = pd.read_csv('rooftop_raw/G10002A3.csv')										
 
 # print(df_1.info())

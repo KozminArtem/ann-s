@@ -1,3 +1,9 @@
+# Опреление средних значений и квантилей показаний датчика от температуры
+# Не было выявлено зависимости значений концентраций от температуры
+# Был добавлен столбец часов и выходных
+# Рисует графики сопротивлений от температуры
+# Исправлена ошибка y_true, prediction
+
 import matplotlib.pyplot as plt  # plots
 import numpy as np  # vectors and matrices
 import pandas as pd  # tables and data manipulations
@@ -40,19 +46,10 @@ for column in features:
 
 
 df['Date'] = pd.to_datetime(df['Date'], format='%d/%m/%Y')
-
-
 df['Time'] = pd.to_datetime(df['Time'], format='%H.%M.%S')
-
-
 df['Date'] = df['Date'].dt.date
-
 df['Time'] = df['Time'].dt.time
-
-
 df = df.dropna(subset=['Date', 'Time'])
-
-
 
 df_new = pd.DataFrame()
 df_new['datetime'] = pd.Series([datetime.datetime.combine(df['Date'][i], df['Time'][i]) for i in range(df['Date'].size) if df['Time'][i]])
@@ -60,42 +57,23 @@ df_new['datetime'] = pd.Series([datetime.datetime.combine(df['Date'][i], df['Tim
 for feat in features:
     df_new[feat] = df[feat]
 
-
 # feat_CO = ['PT08.S1(CO)','T', 'CO(GT)']
-
 feat_CO = ['PT08.S1(CO)', 'CO(GT)']
-
-
 # feat_CO = ['PT08.S1(CO)','T','RH', 'CO(GT)']
 # лучшие результаты на 28%
-
-
-
-
-
 feat_target = feat_CO[-1]
-
 l_feat = len(feat_CO) - 1
-
-
-
-
 
 for feat in feat_CO:
     df_new = df_new[df_new[feat] > -100]
-
-
-
-
-
 
 from scipy.optimize import curve_fit
 
 N_bin = 16
 
+
 T_min = df_new['T'].min()
 T_max = df_new['T'].max()
-
 Arr_CO_min = np.array([np.NaN] * N_bin)
 Arr_CO_Q1 = np.array([np.NaN] * N_bin)
 Arr_CO_Q3 = np.array([np.NaN] * N_bin)
@@ -129,14 +107,12 @@ plt.plot(Arr_CO_T, func_exp(Arr_CO_T, *popt_min), label="Fitted Min", color = "r
 
 df_new['I0_min'] = func_exp(df_new['T'], *popt_min) 
 
-
 popt_Q1, pcov_Q1 = curve_fit(func_exp, Arr_CO_T, Arr_CO_Q1)
 # print ("a = %s , b = %s, c = %s" % (popt[0], popt[1], popt[2]))
 plt.plot(Arr_CO_T, Arr_CO_Q1, label = "Q1",marker = 'o', linestyle = 'None', color = "g")
 plt.plot(Arr_CO_T, func_exp(Arr_CO_T, *popt_Q1), label="Fitted Q1", color = "g")
 
 df_new['I0_Q1'] = func_exp(df_new['T'], *popt_Q1) 
-
 
 popt_QX, pcov_QX = curve_fit(func_exp, Arr_CO_T, Arr_CO_QX)
 # print ("a = %s , b = %s, c = %s" % (popt[0], popt[1], popt[2]))
@@ -155,12 +131,6 @@ plt.legend(loc="best")
 # plt.show()
 
 
-
-
-
-
-
-
 # df_src_diffmean[feat_float_diff].plot(kind='density', subplots=True, layout=(2, 2), sharex=False, figsize=(12,12))
 # # plt.savefig('data_fig/density_raw.png')
 # # plt.show()
@@ -171,16 +141,10 @@ plt.legend(loc="best")
 # # plt.savefig('data_fig/violin_raw.png')
 
 
-
-
-        
-
 																		# linear regression
-
 
 data = pd.DataFrame(df_new[['datetime'] + ['I0_QX'] + feat_CO ].copy())
 print(data.tail(7))
-
 
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score
@@ -190,14 +154,8 @@ from sklearn.model_selection import cross_val_score
 def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
-
 def mean_s_error(y_true, y_pred):
     return np.mean((y_true - y_pred)**2)
-
-
-
-
-
 
 # for time-series cross-validation set 5 folds
 tscv = TimeSeriesSplit(n_splits=5)
@@ -206,80 +164,55 @@ def timeseries_train_test_split(X, y, test_size):
     """
         Perform train-test split with respect to time series structure
     """
-
     # get the index after which test set starts
     test_index = int(len(X) * (1 - test_size))
-
     X_train = X.iloc[:test_index]
     y_train = y.iloc[:test_index]
     X_test = X.iloc[test_index:]
     y_test = y.iloc[test_index:]
-
     return X_train, X_test, y_train, y_test
 
 y = data.dropna()[feat_target]
 X = data.dropna().drop([feat_target], axis=1)
-
-
 
 # reserve 30% of data for testing
 X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=0.3)
 
 time_train = X_train.dropna()['datetime']
 time_test = X_test.dropna()['datetime']
-
 X_train = X_train.dropna().drop(['datetime'], axis=1)
 X_test = X_test.dropna().drop(['datetime'], axis=1)
-
-
 print(X_train.head(5))
 print(y_train.head(5))
 print(time_train.head(5))
 
-
-
-
 temp_str = " "
-
-
 def plotModelResults(
     model, X_train=X_train, X_test=X_test,string = temp_str, plot_intervals=False, plot_anomalies=False, time_test = time_test, time_train = time_train
 ):
-    """
-        Plots modelled vs fact values, prediction intervals and anomalies
-
-    """
-
     prediction = model.predict(X_test)
-
     plt.figure(figsize=(15, 7))
     plt.plot(time_test, prediction, "g", label="prediction", linewidth=2.0)
     plt.plot(time_test, y_test.values, label="actual", linewidth=2.0)
-
+    
     if plot_intervals:
         cv = cross_val_score(
             model, X_train, y_train, cv=tscv, scoring="neg_mean_absolute_error"
         )
         mae = cv.mean() * (-1)
         deviation = cv.std()
-
         scale = 1.96
         lower = prediction - (mae + scale * deviation)
         upper = prediction + (mae + scale * deviation)
-
         plt.plot(time_test, lower, "r--", label="upper bond / lower bond", alpha=0.5)
         plt.plot(time_test, upper, "r--", alpha=0.5)
-
         if plot_anomalies:
             anomalies = np.array([np.NaN] * len(y_test))
             anomalies[y_test < lower] = y_test[y_test < lower]
             anomalies[y_test > upper] = y_test[y_test > upper]
             plt.plot(time_test, anomalies, "o", markersize=10, label="Anomalies")
-
-
-
-    error = mean_absolute_percentage_error(prediction, y_test)
-    error_mse = mean_s_error(prediction, y_test)
+    error = mean_absolute_percentage_error(y_test, prediction)
+    error_mse = mean_s_error(y_test, prediction)
 
     plt.title("MAPE: {0:.2f}% ".format(error) + "MSE: {0:.2f} ".format(error_mse) + str(string))
     plt.legend(loc="best")
@@ -287,15 +220,10 @@ def plotModelResults(
     plt.grid(True)
 
 def plotCoefficients(model):
-    """
-        Plots sorted coefficient values of the model
-    """
-
     coefs = pd.DataFrame(model.coef_, X_train.columns)
     coefs.columns = ["coef"]
     coefs["abs"] = coefs.coef.apply(np.abs)
     coefs = coefs.sort_values(by="abs", ascending=False).drop(["abs"], axis=1)
-
     plt.figure(figsize=(15, 7))
     coefs.coef.plot(kind="bar")
     plt.grid(True, axis="y")
@@ -303,21 +231,14 @@ def plotCoefficients(model):
 
 
 
-
-
 # machine learning in two lines
 lr = LinearRegression()
 lr.fit(X_train, y_train)
-
 plotModelResults(lr, plot_intervals=True)
 plotCoefficients(lr)
 
-
-
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
-
-
 
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
@@ -329,30 +250,15 @@ plotModelResults(lr, X_train=X_train_scaled, X_test=X_test_scaled, string = " sc
 plotCoefficients(lr)
 
 
-
-
-
-
-
-
 data["hour"] = df_new['datetime'].dt.hour
 data["weekday"] = df_new['datetime'].dt.weekday
-
-
 # data["is_weekend"] = df_new['datetime'].dt.weekday.isin([5, 6]) * 1
 # data.tail()
-
-
-
-
 
 y = data.dropna()[feat_target]
 X = data.dropna().drop([feat_target], axis=1)
 
 X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=0.3)
-
-
-
 
 time_train = X_train.dropna()['datetime']
 time_test = X_test.dropna()['datetime']
@@ -360,27 +266,16 @@ time_test = X_test.dropna()['datetime']
 X_train = X_train.dropna().drop(['datetime'], axis=1)
 X_test = X_test.dropna().drop(['datetime'], axis=1)
 
-
-
-
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
+
+
 
 lr = LinearRegression()
 lr.fit(X_train_scaled, y_train)
 
 plotModelResults(lr, X_train=X_train_scaled, X_test=X_test_scaled,string =" scaled with hour", plot_intervals=True)
 plotCoefficients(lr)
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -414,18 +309,12 @@ plotModelResults(
 )
 plotCoefficients(lasso)
 
-
-
                         # BOOSTING
-
-
 
 from xgboost import XGBRegressor
 
 xgb = XGBRegressor(verbosity=0)
 xgb.fit(X_train_scaled, y_train);
-
-
 
 plotModelResults(
     xgb,
@@ -435,11 +324,6 @@ plotModelResults(
     plot_anomalies=True,
     string =" scaled XGBR"
 )
-
-
-
-
-
 
 plt.show()
 
