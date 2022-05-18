@@ -605,6 +605,13 @@ plt.legend(loc="best")
 plt.tight_layout()
 plt.grid(True)
 
+
+
+
+
+
+
+
                                                                         # ML Model
 
 X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_hour = True)
@@ -678,254 +685,150 @@ keras.backend.clear_session()
 # print(test_results)
 
 
-                                                                        # Neurons: 5 - 15, optimal - 10
+
+                                                # Error in fit model: Test MSE +- 0.1, MAPE +- 1% 
+
+MSE_Train = np.array([np.NaN] * 10)
+MAPE_Train = np.array([np.NaN] * 10)
+MSE_Test = np.array([np.NaN] * 10)
+MAPE_Test = np.array([np.NaN] * 10)
+
+for count in range(10):
+    network = models.Sequential()
+    l_feat = X_train_scaled_poly.shape[1]
+    print(count, l_feat)
+    network.add(layers.Dense(units = 10, activation = 'tanh', input_shape=(l_feat,)))
+    network.add(layers.Dense(units=1, activation = 'linear'))
+    network.compile(loss='mean_squared_error', optimizer= keras.optimizers.Adam(0.005), metrics=['mean_squared_error']) 
+    history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 100, validation_split = 0.1)
+    # plot_loss(history, string_l = "NN tanh" + str(count), draw_val = True)
+    MSE_Train[count] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
+    MAPE_Train[count] = mean_absolute_percentage_error(y_train,network.predict(X_train_scaled_poly).flatten())
+    MSE_Test[count] = mean_s_error(y_test,network.predict(X_test_scaled_poly).flatten())    
+    MAPE_Test[count] = mean_absolute_percentage_error(y_test,network.predict(X_test_scaled_poly).flatten())
+    keras.backend.clear_session()
 
 
-List_Neur = range(1, 25, 2)
+figure, axis = plt.subplots(1,2) 
+axis[0].plot(MSE_Train, label="train", linewidth=2.0, color = "red")
+axis[0].plot(MSE_Test, label="test", linewidth=2.0, color = "green")
+axis[0].set_title("MSE, count")
+axis[0].legend(loc="best")
+axis[1].plot(MAPE_Train, label="train", linewidth=2.0, color = "orange")
+axis[1].plot(MAPE_Test, label="test", linewidth=2.0, color = "dodgerblue")
+axis[1].set_title("MAPE, count")
+axis[1].legend(loc="best")
 
-MSE_Train_Neur = np.array([np.NaN] * len(List_Neur))
-MAPE_Train_Neur = np.array([np.NaN] * len(List_Neur))
-MSE_Test_Neur = np.array([np.NaN] * len(List_Neur))
-MAPE_Test_Neur = np.array([np.NaN] * len(List_Neur))
-
-MSE_Train_temp =  np.array([np.NaN] * 3)
-MAPE_Train_temp =  np.array([np.NaN] * 3)
-MSE_Test_temp =  np.array([np.NaN] * 3)
-MAPE_Test_temp =  np.array([np.NaN] * 3)
+print("MSE_Train", MSE_Train.mean(), MSE_Train.min(), MSE_Train.max())
+print("MSE_Test",  MSE_Test.mean(), MSE_Test.min(), MSE_Test.max())
+print("MAPE_Train",MAPE_Train.mean(), MAPE_Train.min(), MAPE_Train.max())
+print("MSE_Test",  MAPE_Test.mean(), MAPE_Test.min(), MAPE_Test.max())
 
 
-for count, neur in enumerate(List_Neur):
-    for j in range(3):
+
+                                    # Function activation in Hidden Layer with linear output: elu, relu, selu, sigmoid, tanh
+
+List_Function = ['linear', 'elu', 'relu', 'selu', 'sigmoid', 'tanh', 'exponential']
+
+MSE_Train_Function = np.array([np.NaN] * len(List_Function))
+MAPE_Train_Function = np.array([np.NaN] * len(List_Function))
+MSE_Test_Function = np.array([np.NaN] * len(List_Function))
+MAPE_Test_Function = np.array([np.NaN] * len(List_Function))
+
+MSE_Train_Delta = np.array([np.NaN] * len(List_Function))
+MAPE_Train_Delta = np.array([np.NaN] * len(List_Function))
+MSE_Test_Delta = np.array([np.NaN] * len(List_Function))
+MAPE_Test_Delta = np.array([np.NaN] * len(List_Function))
+
+
+MSE_Train_temp =  np.array([np.NaN] * 5)
+MAPE_Train_temp =  np.array([np.NaN] * 5)
+MSE_Test_temp =  np.array([np.NaN] * 5)
+MAPE_Test_temp =  np.array([np.NaN] * 5)
+
+for count, activations_function in enumerate(List_Function):
+    for j in range(5):
         network = models.Sequential()
         l_feat = X_train_scaled_poly.shape[1]
-
-        network.add(layers.Dense(units = neur, activation = 'tanh', input_shape=(l_feat,)))
+        network.add(layers.Dense(units = 10, activation = activations_function, input_shape=(l_feat,)))
         network.add(layers.Dense(units=1, activation = 'linear'))
-
         network.compile(loss='mean_squared_error', optimizer= keras.optimizers.Adam(0.005), metrics=['mean_squared_error']) 
-
         history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 100, validation_split = 0.1)
-        # plot_loss(history, string_l = "NN tanh" + str(neur))
+        if j == 3:    
+            plot_loss(history, string_l = "NN_lin_" + str(activations_function), draw_val = True)
         MSE_Train_temp[j] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
         MAPE_Train_temp[j] = mean_absolute_percentage_error(y_train,network.predict(X_train_scaled_poly).flatten())
         MSE_Test_temp[j] = mean_s_error(y_test,network.predict(X_test_scaled_poly).flatten())    
         MAPE_Test_temp[j] = mean_absolute_percentage_error(y_test,network.predict(X_test_scaled_poly).flatten())
         keras.backend.clear_session()
-    print(count,str("Neurons: "), neur)
-    MSE_Train_Neur[count] = MSE_Train_temp.mean()
-    MAPE_Train_Neur[count] = MAPE_Train_temp.mean()
-    MSE_Test_Neur[count] = MSE_Test_temp.mean()
-    MAPE_Test_Neur[count] = MAPE_Test_temp.mean() 
+    print(count,str("Activation:"), activations_function)
+    MSE_Train_Function[count] = MSE_Train_temp.mean()
+    MAPE_Train_Function[count] = MAPE_Train_temp.mean()
+    MSE_Test_Function[count] = MSE_Test_temp.mean()
+    MAPE_Test_Function[count] = MAPE_Test_temp.mean() 
+    
+    MSE_Train_Delta[count] = MSE_Train_temp.std()
+    MAPE_Train_Delta[count] = MAPE_Train_temp.std()
+    MSE_Test_Delta[count] = MSE_Test_temp.std()
+    MAPE_Test_Delta[count] = MAPE_Test_temp.std() 
 
 figure, axis = plt.subplots(1,2) 
-axis[0].plot(List_Neur, MSE_Train_Neur, label="train", linewidth=2.0, color = "red")
-axis[0].plot(List_Neur, MSE_Test_Neur, label="test", linewidth=2.0, color = "green")
-axis[0].set_title("MSE, Neurons")
+axis[0].plot(List_Function, MSE_Train_Function, label="train", linewidth=2.0, color = "red")
+axis[0].plot(List_Function, MSE_Test_Function, label="test", linewidth=2.0, color = "green")
+axis[0].plot(List_Function, MSE_Test_Function - MSE_Test_Delta, linewidth=1.0, color = "green")
+axis[0].plot(List_Function, MSE_Test_Function + MSE_Test_Delta, linewidth=1.0, color = "green")
+axis[0].set_title("MSE, Activation (linear)")
 axis[0].legend(loc="best")
-axis[1].plot(List_Neur, MAPE_Train_Neur, label="train", linewidth=2.0, color = "orange")
-axis[1].plot(List_Neur, MAPE_Test_Neur, label="test", linewidth=2.0, color = "dodgerblue")
-axis[1].set_title("MAPE, Neurons")
+axis[1].plot(List_Function, MAPE_Train_Function, label="train", linewidth=2.0, color = "orange")
+axis[1].plot(List_Function, MAPE_Test_Function, label="test", linewidth=2.0, color = "dodgerblue")
+axis[1].plot(List_Function, MAPE_Test_Function - MAPE_Test_Delta, linewidth=1.0, color = "dodgerblue")
+axis[1].plot(List_Function, MAPE_Test_Function + MAPE_Test_Delta, linewidth=1.0, color = "dodgerblue")
+axis[1].set_title("MAPE, Activation (linear)")
 axis[1].legend(loc="best")
 
 
 
-                                                                        # Speed Adam: 0.001 - 0.01, optimal 0.005
 
 
+                                    # Function activation in Hidden Layer with relu output: elu, relu, selu, tanh
 
-# List_Speed = [0.0001, 0.0002, 0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1]
-
-# MSE_Train = np.array([np.NaN] * len(List_Speed))
-# MAPE_Train = np.array([np.NaN] * len(List_Speed))
-# MSE_Test = np.array([np.NaN] * len(List_Speed))
-# MAPE_Test = np.array([np.NaN] * len(List_Speed))
-
-# for count, speed in enumerate(List_Speed):
-#     for j in range(3):
-#         network = models.Sequential()
-#         l_feat = X_train_scaled_poly.shape[1]
-
-#         network.add(layers.Dense(units = 10, activation = 'tanh', input_shape=(l_feat,)))
-#         network.add(layers.Dense(units=1, activation = 'linear'))
-
-#         network.compile(loss='mean_squared_error', optimizer= keras.optimizers.Adam(speed), metrics=['mean_squared_error']) 
-
-#         history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 100, validation_split = 0.1)
-#         # plot_loss(history, string_l = "NN tanh" + str(count), draw_val = True)
-#         MSE_Train_temp[j] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
-#         MAPE_Train_temp[j] = mean_absolute_percentage_error(y_train,network.predict(X_train_scaled_poly).flatten())
-#         MSE_Test_temp[j] = mean_s_error(y_test,network.predict(X_test_scaled_poly).flatten())    
-#         MAPE_Test_temp[j] = mean_absolute_percentage_error(y_test,network.predict(X_test_scaled_poly).flatten())
-#         keras.backend.clear_session()
-#     print(count,str("speed Adam: "), speed)    
-#     MSE_Train[count] = MSE_Train_temp.mean()
-#     MAPE_Train[count] = MAPE_Train_temp.mean()
-#     MSE_Test[count] = MSE_Test_temp.mean()
-#     MAPE_Test[count] = MAPE_Test_temp.mean() 
-
-
-# figure, axis = plt.subplots(1,2) 
-# axis[0].plot(List_Speed, MSE_Train, label="train", linewidth=2.0, color = "red")
-# axis[0].plot(List_Speed, MSE_Test, label="test", linewidth=2.0, color = "green")
-# axis[0].set_title("MSE, speed")
-# axis[0].legend(loc="best")
-# axis[1].plot(List_Speed, MAPE_Train, label="train", linewidth=2.0, color = "orange")
-# axis[1].plot(List_Speed, MAPE_Test, label="test", linewidth=2.0, color = "dodgerblue")
-# axis[1].set_title("MAPE, speed")
-# axis[1].legend(loc="best")
-
-# figure, axis = plt.subplots(1,2)
-# axis[0].plot(MSE_Train, label="train", linewidth=2.0, color = "red")
-# axis[0].plot(MSE_Test, label="test", linewidth=2.0, color = "green")
-# axis[0].set_title("MSE, speed")
-# axis[0].legend(loc="best")
-# axis[1].plot(MAPE_Train, label="train", linewidth=2.0, color = "orange")
-# axis[1].plot(MAPE_Test, label="test", linewidth=2.0, color = "dodgerblue")
-# axis[1].set_title("MAPE, speed")
-# axis[1].legend(loc="best")
-
-
-
-                                                                        # Validation: 10 - 30 %
-
-# List_Validation = np.arange(0.0, 0.9, 0.02)
-
-# MSE_Train_Validation = np.array([np.NaN] * len(List_Validation))
-# MAPE_Train_Validation = np.array([np.NaN] * len(List_Validation))
-# MSE_Test_Validation = np.array([np.NaN] * len(List_Validation))
-# MAPE_Test_Validation = np.array([np.NaN] * len(List_Validation))
-
-# MSE_Train_temp =  np.array([np.NaN] * 3)
-# MAPE_Train_temp =  np.array([np.NaN] * 3)
-# MSE_Test_temp =  np.array([np.NaN] * 3)
-# MAPE_Test_temp =  np.array([np.NaN] * 3)
-
-
-# for count, validation in enumerate(List_Validation):
-#     for j in range(3):
-#         network = models.Sequential()
-#         l_feat = X_train_scaled_poly.shape[1]
-
-#         network.add(layers.Dense(units = 10, activation = 'tanh', input_shape=(l_feat,)))
-#         network.add(layers.Dense(units=1, activation = 'linear'))
-
-#         network.compile(loss='mean_squared_error', optimizer= keras.optimizers.Adam(0.005), metrics=['mean_squared_error']) 
-
-#         history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 100, validation_split = validation)
-#         # plot_loss(history, string_l = "NN tanh" + str(validation))
-#         MSE_Train_temp[j] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
-#         MAPE_Train_temp[j] = mean_absolute_percentage_error(y_train,network.predict(X_train_scaled_poly).flatten())
-#         MSE_Test_temp[j] = mean_s_error(y_test,network.predict(X_test_scaled_poly).flatten())    
-#         MAPE_Test_temp[j] = mean_absolute_percentage_error(y_test,network.predict(X_test_scaled_poly).flatten())
-#         keras.backend.clear_session()
-#     print(count,str("validation: "), validation)
-#     MSE_Train_Validation[count] = MSE_Train_temp.mean()
-#     MAPE_Train_Validation[count] = MAPE_Train_temp.mean()
-#     MSE_Test_Validation[count] = MSE_Test_temp.mean()
-#     MAPE_Test_Validation[count] = MAPE_Test_temp.mean() 
-
-# figure, axis = plt.subplots(1,2) 
-# axis[0].plot(List_Validation, MSE_Train_Validation, label="train", linewidth=2.0, color = "red")
-# axis[0].plot(List_Validation, MSE_Test_Validation, label="test", linewidth=2.0, color = "green")
-# axis[0].set_title("MSE, validation")
-# axis[0].legend(loc="best")
-# axis[1].plot(List_Validation, MAPE_Train_Validation, label="train", linewidth=2.0, color = "orange")
-# axis[1].plot(List_Validation, MAPE_Test_Validation, label="test", linewidth=2.0, color = "dodgerblue")
-# axis[1].set_title("MAPE, validation")
-# axis[1].legend(loc="best")
-
-
-
-
-
-
-
-
-
-
-
-
-                                                           # Hidden layer(5:5...5:5) - optimal 1 
-
-
-List_Layer = range(1, 6, 1)
-
-MSE_Train_Layer = np.array([np.NaN] * len(List_Layer))
-MAPE_Train_Layer = np.array([np.NaN] * len(List_Layer))
-MSE_Test_Layer = np.array([np.NaN] * len(List_Layer))
-MAPE_Test_Layer = np.array([np.NaN] * len(List_Layer))
-
-for count, layer in enumerate(List_Layer):
-    for j in range(3):
+for count, activations_function in enumerate(List_Function):
+    for j in range(5):
         network = models.Sequential()
         l_feat = X_train_scaled_poly.shape[1]
-        network.add(layers.Dense(units = 5, activation = 'tanh', input_shape=(l_feat,)))
-        for k in range(1, layer):
-            network.add(layers.Dense(units = 5, activation = 'tanh'))
-        network.add(layers.Dense(units=1, activation = 'linear'))
+        network.add(layers.Dense(units = 10, activation = activations_function, input_shape=(l_feat,)))
+        network.add(layers.Dense(units=1, activation = 'relu'))
         network.compile(loss='mean_squared_error', optimizer= keras.optimizers.Adam(0.005), metrics=['mean_squared_error']) 
         history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 100, validation_split = 0.1)
-        if j == 2:
-            plot_loss(history, string_l = "NN tanh with Hidden Layer:" + str(layer))
+        if j == 3:    
+            plot_loss(history, string_l = "NN_rel_" + str(activations_function), draw_val = True)
         MSE_Train_temp[j] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
         MAPE_Train_temp[j] = mean_absolute_percentage_error(y_train,network.predict(X_train_scaled_poly).flatten())
         MSE_Test_temp[j] = mean_s_error(y_test,network.predict(X_test_scaled_poly).flatten())    
         MAPE_Test_temp[j] = mean_absolute_percentage_error(y_test,network.predict(X_test_scaled_poly).flatten())
-        # ann_viz(network, view = True, filename = "fig_NN/NN_HiddenLayer" + str(layer) + ".gv", title="NN, Hidden" + str(layer))
         keras.backend.clear_session()
-    print(count,str("Layer: "), layer)    
-    MSE_Train_Layer[count] = MSE_Train_temp.mean()
-    MAPE_Train_Layer[count] = MAPE_Train_temp.mean()
-    MSE_Test_Layer[count] = MSE_Test_temp.mean()
-    MAPE_Test_Layer[count] = MAPE_Test_temp.mean() 
+    print(count,str("Activation:"), activations_function)
+    MSE_Train_Function[count] = MSE_Train_temp.mean()
+    MAPE_Train_Function[count] = MAPE_Train_temp.mean()
+    MSE_Test_Function[count] = MSE_Test_temp.mean()
+    MAPE_Test_Function[count] = MAPE_Test_temp.mean() 
+    MSE_Train_Delta[count] = MSE_Train_temp.std()
+    MAPE_Train_Delta[count] = MAPE_Train_temp.std()
+    MSE_Test_Delta[count] = MSE_Test_temp.std()
+    MAPE_Test_Delta[count] = MAPE_Test_temp.std() 
 
 figure, axis = plt.subplots(1,2) 
-axis[0].plot(List_Layer, MSE_Train_Layer, label="train", linewidth=2.0, color = "red")
-axis[0].plot(List_Layer, MSE_Test_Layer, label="test", linewidth=2.0, color = "green")
-axis[0].set_title("MSE, hidden layer")
+axis[0].plot(List_Function, MSE_Train_Function, label="train", linewidth=2.0, color = "red")
+axis[0].plot(List_Function, MSE_Test_Function, label="test", linewidth=2.0, color = "green")
+axis[0].plot(List_Function, MSE_Test_Function - MSE_Test_Delta, linewidth=1.0, color = "green")
+axis[0].plot(List_Function, MSE_Test_Function + MSE_Test_Delta, linewidth=1.0, color = "green")
+axis[0].set_title("MSE, Activation (relu)")
 axis[0].legend(loc="best")
-axis[1].plot(List_Layer, MAPE_Train_Layer, label="train", linewidth=2.0, color = "orange")
-axis[1].plot(List_Layer, MAPE_Test_Layer, label="test", linewidth=2.0, color = "dodgerblue")
-axis[1].set_title("MAPE, hidden layer")
-axis[1].legend(loc="best")
-
-
-                                                         # Hidden layer(5:2^n...2:1) - optimal  2/4
-
-
-for count, layer in enumerate(List_Layer):
-    for j in range(3):
-        network = models.Sequential()
-        l_feat = X_train_scaled_poly.shape[1]
-        network.add(layers.Dense(units = 2**layer, activation = 'tanh', input_shape=(l_feat,)))
-        for k in range(1, layer):
-            network.add(layers.Dense(units = 2**(layer - k), activation = 'tanh'))
-        network.add(layers.Dense(units=1, activation = 'linear'))
-        network.compile(loss='mean_squared_error', optimizer= keras.optimizers.Adam(0.005), metrics=['mean_squared_error']) 
-        history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 100, validation_split = 0.1)
-        if j == 2:
-            plot_loss(history, string_l = "NN triangle With hidden Layer:" + str(layer))
-        MSE_Train_temp[j] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
-        MAPE_Train_temp[j] = mean_absolute_percentage_error(y_train,network.predict(X_train_scaled_poly).flatten())
-        MSE_Test_temp[j] = mean_s_error(y_test,network.predict(X_test_scaled_poly).flatten())    
-        MAPE_Test_temp[j] = mean_absolute_percentage_error(y_test,network.predict(X_test_scaled_poly).flatten())
-        if j == 2:
-            ann_viz(network, view = True, filename = "fig_NN/NN_HiddenLayer_Triangle" + str(layer) + ".gv", title="NN, Hidden Triangle" + str(layer))
-        keras.backend.clear_session()
-    print(count,str("Layer: "), layer)    
-    MSE_Train_Layer[count] = MSE_Train_temp.mean()
-    MAPE_Train_Layer[count] = MAPE_Train_temp.mean()
-    MSE_Test_Layer[count] = MSE_Test_temp.mean()
-    MAPE_Test_Layer[count] = MAPE_Test_temp.mean() 
-
-figure, axis = plt.subplots(1,2) 
-axis[0].plot(List_Layer, MSE_Train_Layer, label="train", linewidth=2.0, color = "red")
-axis[0].plot(List_Layer, MSE_Test_Layer, label="test", linewidth=2.0, color = "green")
-axis[0].set_title("MSE, triangle")
-axis[0].legend(loc="best")
-axis[1].plot(List_Layer, MAPE_Train_Layer, label="train", linewidth=2.0, color = "orange")
-axis[1].plot(List_Layer, MAPE_Test_Layer, label="test", linewidth=2.0, color = "dodgerblue")
-axis[1].set_title("MAPE, triangle")
+axis[1].plot(List_Function, MAPE_Train_Function, label="train", linewidth=2.0, color = "orange")
+axis[1].plot(List_Function, MAPE_Test_Function, label="test", linewidth=2.0, color = "dodgerblue")
+axis[1].plot(List_Function, MAPE_Test_Function - MAPE_Test_Delta, linewidth=1.0, color = "dodgerblue")
+axis[1].plot(List_Function, MAPE_Test_Function + MAPE_Test_Delta, linewidth=1.0, color = "dodgerblue")
+axis[1].set_title("MAPE, Activation (relu)")
 axis[1].legend(loc="best")
 
 
@@ -938,58 +841,116 @@ axis[1].legend(loc="best")
 
 
 
-# for count, layer in enumerate(List_Layer):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ann_viz(network, view = True, filename = "fig_NN/network_tanh.gv", title="NN_tanh")
+
+# keras.utils.plot_model(network, to_file='fig_NN/NN_tanh.png',
+#     show_shapes=True,
+#     show_dtype=True,
+#     show_layer_names=True,
+#     rankdir='TB',
+#     expand_nested=True,
+#     dpi=96,
+#     layer_range=None,
+#     show_layer_activations=True
+# )
+
+
+
+
+
+
+
+
+# for count, activations_function in enumerate(List_Function):
+    
 #     network = models.Sequential()
+
 #     l_feat = X_train_scaled_poly.shape[1]
+    
+#     network.add(layers.Dense(units=l_feat, activation = activations_function, input_shape=(l_feat,)))
+#     network.add(layers.Dense(units=1))
+#     network.compile(loss='mean_squared_error', optimizer= keras.optimizers.Adam(0.001)) 
 
-#     network.add(layers.Dense(units = 3**layer, activation = 'tanh', input_shape=(l_feat,)))
-   
-#     for j in range(1, layer):
-#         network.add(layers.Dense(units = 3**(layer - j), activation = 'tanh'))
+#     history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 100, validation_split = 0.2)
 
-#     network.add(layers.Dense(units=1, activation = 'linear'))
+#     plot_loss(history)
 
-#     network.compile(loss='mean_squared_error', optimizer= keras.optimizers.Adam(0.001), metrics=['mean_squared_error']) 
+#     plotModelResults(network, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "NN pol: "+ str(Degree) +" " + str(activations_function),  plot_intervals=True,\
+#                      y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test, plot_diff = False)
 
-#     history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 100, validation_split = 0.1)
+#     # ann_viz(network, view = True, filename = "fig_NN/NN_"+ str(activations_function) + ".gv", title="NN")
+
+#     keras.utils.plot_model(network, to_file='model.png',
+#         show_shapes=True,
+#         show_dtype=True,
+#         show_layer_names=True,
+#         rankdir='TB',
+#         expand_nested=True,
+#         dpi=96,
+#         layer_range=None,
+#         show_layer_activations=True
+#     )
 
 
-#     plot_loss(history, string_l = "NN triangle tanh" + str(layer))
 
-#     MSE_Train_Layer[count] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
-#     MAPE_Train_Layer[count] = mean_absolute_percentage_error(y_train,network.predict(X_train_scaled_poly).flatten())
-
-#     MSE_Test_Layer[count] = mean_s_error(y_test,network.predict(X_test_scaled_poly).flatten())    
-#     MAPE_Test_Layer[count] = mean_absolute_percentage_error(y_test,network.predict(X_test_scaled_poly).flatten())
-
-#     ann_viz(network, view = True, filename = "fig_NN/NN_HiddenLayer_Triangle" + str(layer) + ".gv", title="NN, Hidden Triangle" + str(layer))
 
 
 #     keras.backend.clear_session()
 
 
-# figure, axis = plt.subplots(1,2) 
-# axis[0].plot(List_Layer, MSE_Train_Layer, label="train", linewidth=2.0, color = "red")
-# axis[0].plot(List_Layer, MSE_Test_Layer, label="test", linewidth=2.0, color = "green")
+#     # network.compile(loss=Type_error, # Mean squared error
+#     #                 optimizer=Type_optimizer, # Optimization algorithm
+#     #                 metrics=[Type_error]) # Mean squared error
 
-# axis[0].set_title("MSE, val = 0.1")
-# axis[0].legend(loc="best")
+#     # history = network.fit(X_train_scaled_poly, # Features
+#     #                       y_train, # Target vector
+#     #                       epochs=Number_epochs, # Number of epochs
+#     #                       verbose=0, # No output
+#     #                       batch_size=100, # Number of observations per batch
+#     #                       validation_data=(X_test_scaled_poly, y_test)) # Data for evaluation
+
+#     # Train_X, Valid_X, Train_Y, Valid_Y = timeseries_train_test_split(X_train_scaled_poly, y_train, test_size=0.5)
+#     # history = network.fit(Train_X, # Features
+#     #                       Train_Y, # Target vector
+#     #                       epochs=Number_epochs, # Number of epochs
+#     #                       verbose=0, # No output
+#     #                       batch_size=100, # Number of observations per batch
+#     #                       validation_data=(Valid_X, Valid_Y)) # Data for evaluation
 
 
-# axis[1].plot(List_Layer, MAPE_Train_Layer, label="train", linewidth=2.0, color = "orange")
-# axis[1].plot(List_Layer, MAPE_Test_Layer, label="test", linewidth=2.0, color = "dodgerblue")
+#     # keras.utils.plot_model(network, to_file='model.png',
+#     #     show_shapes=True,
+#     #     show_dtype=True,
+#     #     show_layer_names=True,
+#     #     rankdir='TB',
+#     #     expand_nested=True,
+#     #     dpi=96,
+#     #     layer_range=None,
+#     #     show_layer_activations=True
+#     # )
 
-# axis[1].set_title("MAPE, val = 0.1")
-# axis[1].legend(loc="best")
 
 
-
-
-
-
-
-
-                                                            #  Mean CO
 
 
 # data["hour"] = df_new['datetime'].dt.hour
@@ -1069,6 +1030,171 @@ axis[1].legend(loc="best")
 # # plotCoefficients(lr, X_train=X_train_scaled_poly)
 
 # # learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, 10, 'MeanH_P2')
+
+
+
+
+
+
+
+
+
+
+
+# network = models.Sequential()
+
+# # Add fully connected layer with a ReLU activation function
+# l_feat = X_train_scaled_poly.shape[1]
+
+# network.add(layers.Dense(units=l_feat, activation=Type_func, input_shape=(l_feat,)))
+
+# # Add fully connected layer with a ReLU activation function
+# # network.add(layers.Dense(units=l_feat, activation=fu))
+
+# # Add fully connected layer with no activation function
+# network.add(layers.Dense(units=1, activation = Type_func))
+
+
+# # Compile neural network
+# network.compile(loss=Type_error, # Mean squared error
+#                 optimizer=Type_optimizer, # Optimization algorithm
+#                 metrics=[Type_error]) # Mean squared error
+
+# # Train neural network
+# history = network.fit(X_train_scaled_poly, # Features
+#                       y_train, # Target vector
+#                       epochs=Number_epochs, # Number of epochs
+#                       verbose=0, # No output
+#                       batch_size=100, # Number of observations per batch
+#                       validation_data=(X_test_scaled_poly, y_test)) # Data for evaluation
+
+
+
+
+# prediction = network.predict(X_test_scaled_poly)
+
+# print(len(y_test), type(y_test))
+# print(len(prediction), type(prediction))
+
+
+
+# plotModelResults(network, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "network MeanCO(h) D = 2, fu = " +str(Type_func),  plot_intervals=True,\
+#                  y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
+
+
+# keras.utils.plot_model(
+#     network,
+#     to_file='model.png',
+#     show_shapes=True,
+#     show_dtype=True,
+#     show_layer_names=True,
+#     rankdir='TB',
+#     expand_nested=True,
+#     dpi=96,
+#     layer_range=None,
+#     show_layer_activations=True
+# )
+
+# from ann_visualizer.visualize import ann_viz
+
+
+
+
+# ann_viz(network, view = True, title="My first neural network")
+
+
+
+
+
+
+
+# # # plotModelResults(network, X_train_scaled_poly, X_test_scaled_poly, fu)
+# keras.backend.clear_session()
+#     # plotCoefficients(network)
+
+
+
+
+
+
+
+
+
+# data["hour"] = df_new['datetime'].dt.hour
+# data["weekday"] = df_new['datetime'].dt.weekday
+# data["is_weekend"] = df_new['datetime'].dt.weekday.isin([5, 6]) * 1
+# data.tail()
+
+# from sklearn.preprocessing import StandardScaler
+
+# scaler = StandardScaler()
+
+# y = data.dropna()[feat_target]
+# X = data.dropna().drop([feat_target], axis=1)
+
+# X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=0.3)
+
+# time_train = X_train.dropna()['datetime']
+# time_test = X_test.dropna()['datetime']
+
+# X_train = X_train.dropna().drop(['datetime'], axis=1)
+# X_test = X_test.dropna().drop(['datetime'], axis=1)
+
+# print(X_train.head(5))
+# print(y_train.head(5))
+
+# X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train))
+# X_test_scaled = pd.DataFrame(scaler.transform(X_test))
+
+# print(X_train_scaled.head(5))
+# print(y_train.head(5))
+# print(X_train_scaled.shape[1])
+
+
+
+
+
+
+
+
+
+# for fu in List_Function:
+
+
+#     # Start neural network
+#     network_s = models.Sequential()
+
+#     # Add fully connected layer with a ReLU activation function
+#     network_s.add(layers.Dense(units=l_feat+3, activation=Type_func, input_shape=(X_train_scaled.shape[1],)))
+
+#     # # Add fully connected layer with a ReLU activation function
+#     network_s.add(layers.Dense(units=l_feat+3, activation=Type_func))
+
+#     # Add fully connected layer with no activation function
+#     network_s.add(layers.Dense(units=1, activation = 'relu'))
+
+
+
+#     # Compile neural network
+#     network_s.compile(loss=Type_error, # Mean squared error
+#                     optimizer=Type_optimizer, # Optimization algorithm
+#                     metrics=[Type_error]) # Mean squared error
+
+#     # Train neural network
+#     history_s = network_s.fit(X_train_scaled, # Features
+#                           y_train, # Target vector
+#                           epochs=Number_epochs, # Number of epochs
+#                           verbose=0, # No output
+#                           batch_size=100, # Number of observations per batch
+#                           validation_data=(X_test_scaled, y_test)) # Data for evaluation
+
+#     plotModelResults(network_s, X_train_scaled, X_test_scaled, (fu+str(" scaled" )))
+
+#     keras.backend.clear_session()
+
+
+
+
 
 
 
