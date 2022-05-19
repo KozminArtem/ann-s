@@ -21,7 +21,7 @@ from pylab import rcParams
 rcParams['figure.figsize'] = 10, 8 
 import datetime
 
-df = pd.read_csv('AirQualityUCI/AirQualityUCI.csv', sep = ';') 
+df = pd.read_csv('../AirQualityUCI/AirQualityUCI.csv', sep = ';') 
 features = list(df.columns)
 del features[0]
 del features[0]
@@ -68,17 +68,32 @@ def mean_s_error(y_true, y_pred):
 # for time-series cross-validation set 5 folds
 tscv = TimeSeriesSplit(n_splits=5)
 def timeseries_train_test_split(X, y, test_size):
-    test_index = int(len(X) * (1 - test_size))
-    X_train = X.iloc[:test_index]
-    y_train = y.iloc[:test_index]
-    X_test = X.iloc[test_index:]
-    y_test = y.iloc[test_index:]
-    return X_train, X_test, y_train, y_test
+    if test_size > 1:
+        test_index = int(test_size)
+        X_train = X.iloc[:test_index]
+        y_train = y.iloc[:test_index]
+        X_test = X.iloc[test_index:]
+        y_test = y.iloc[test_index:]
+        return X_train, X_test, y_train, y_test        
+    if test_size == 1:
+        test_index = int(len(X))
+        X_train = X.iloc[:test_index]
+        y_train = y.iloc[:test_index]
+        X_test = X.iloc[:test_index]
+        y_test = y.iloc[:test_index]
+        return X_train, X_test, y_train, y_test
+    else:
+        test_index = int(len(X) * (1 - test_size))
+        X_train = X.iloc[:test_index]
+        y_train = y.iloc[:test_index]
+        X_test = X.iloc[test_index:]
+        y_test = y.iloc[test_index:]
+        return X_train, X_test, y_train, y_test
 
 y = data.dropna()[feat_target]
 X = data.dropna().drop([feat_target], axis=1)
 # reserve 30% of data for testing
-X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=0.3)
+X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=2000)
 time_train = X_train.dropna()['datetime']
 time_test = X_test.dropna()['datetime']
 X_train = X_train.dropna().drop(['datetime'], axis=1)
@@ -145,14 +160,14 @@ plotModelResults(lr, X_train=X_train_scaled, X_test=X_test_scaled, string = " sc
 plotCoefficients(lr)
 
 # data["hour"] = df_new['datetime'].dt.hour
-# data["weekday"] = df_new['datetime'].dt.weekday
 
+# data["weekday"] = df_new['datetime'].dt.weekday
 # data["is_weekend"] = df_new['datetime'].dt.weekday.isin([5, 6]) * 1
 # data.tail()
 
 y = data.dropna()[feat_target]
 X = data.dropna().drop([feat_target], axis=1)
-X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=0.3)
+X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=2000)
 
 time_train = X_train.dropna()['datetime']
 time_test = X_test.dropna()['datetime']

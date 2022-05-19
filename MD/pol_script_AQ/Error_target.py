@@ -57,14 +57,14 @@ Degree = 2
 # list_delete = []
 list_delete = ['T^2','R_NM^2']
 # list_delete = ['T^2','PT08.S2(NMHC)^2']
-T_size = 0.9
+T_size = 2000
 
 feat_target = feat_CO[-1]
 l_feat = len(feat_CO) - 1
 for feat in feat_CO:
     df_new = df_new[df_new[feat] > -100]
 
-# df_new = df_new[df_new['CO(GT)'] > 0.4]
+df_new = df_new[df_new['CO(GT)'] > 0.4]
 # df_new = df_new[df_new['CO(GT)'] < 5.0]
 
 print(df_new['CO(GT)'].min())
@@ -111,6 +111,13 @@ def arr_gate_rate_error(y_true,y_pred):
 tscv = TimeSeriesSplit(n_splits=5)
 
 def timeseries_train_test_split(X, y, test_size):
+    if test_size > 1:
+        test_index = int(test_size)
+        X_train = X.iloc[:test_index]
+        y_train = y.iloc[:test_index]
+        X_test = X.iloc[test_index:]
+        y_test = y.iloc[test_index:]
+        return X_train, X_test, y_train, y_test
     if test_size == 1:
         test_index = int(len(X))
         X_train = X.iloc[:test_index]
@@ -125,6 +132,7 @@ def timeseries_train_test_split(X, y, test_size):
         X_test = X.iloc[test_index:]
         y_test = y.iloc[test_index:]
         return X_train, X_test, y_train, y_test
+
 
 X_train = pd.DataFrame()
 X_test = pd.DataFrame()
@@ -204,7 +212,22 @@ def plotModelResults(
     temp['Month'] = np.array(time_test.dt.month)
     print(temp['Month'])
     print(temp['GRE'].mean())
-
+    if plot_intervals:
+        cv = cross_val_score(
+            model, X_train, y_train, cv=tscv, scoring="neg_mean_absolute_error"
+        )
+        mae = cv.mean() * (-1)
+        deviation = cv.std()
+        scale = 1.96
+        lower = prediction - (mae + scale * deviation)
+        upper = prediction + (mae + scale * deviation)
+        plt.plot(time_test, lower, "r--", label="upper bond / lower bond", alpha=0.5)
+        plt.plot(time_test, upper, "r--", alpha=0.5)
+        if plot_anomalies:
+            anomalies = np.array([np.NaN] * len(y_test))
+            anomalies[y_test < lower] = y_test[y_test < lower]
+            anomalies[y_test > upper] = y_test[y_test > upper]
+            plt.plot(time_test, anomalies, "o", markersize=10, label="Anomalies")
     if plot_diff:
         # plt.figure(figsize=(15, 7))
         # plt.plot(time_test, array_diff, label="dif", marker = 'o',markersize=3, linestyle = 'None', color = "green")
@@ -216,11 +239,10 @@ def plotModelResults(
         plt.figure(figsize=(15, 7))
         plt.plot(np.linspace(0, 10),np.linspace(0, 10)) 
 
-        plt.plot(y_test.values, prediction, label="Pred(True)",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
-        plt.plot(np.linspace(0, 10),1.25*np.linspace(0, 10), color = "red")
-        plt.plot(np.linspace(0, 10),0.75*np.linspace(0, 10), color = "red")
-
-        plt.title("Pred(True)" + str(string))
+        plt.plot(y_test.values, prediction, label="Prediction(True)",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.plot(np.linspace(0, 10),1.25*np.linspace(0, 10), color = "red", label = "Upper Lim")
+        plt.plot(np.linspace(0, 10),0.75*np.linspace(0, 10), color = "red", label = "Bottom Lim")
+        plt.title("Prediction(True)" + str(string))
         plt.legend(loc="best")
         plt.tight_layout()
         plt.grid(True)
@@ -240,7 +262,8 @@ def plotModelResults(
 
         plt.figure(figsize=(15, 7))
         plt.plot(y_test.values, array_mse, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
-        plt.title("Mse(y_true)" + str(string))
+        # plt.title("Mse(y_true)" + str(string))
+        plt.title("Box Plot. MSE(True)" + str(string))
         plt.legend(loc="best")
         plt.tight_layout()
         plt.grid(True)
@@ -381,7 +404,7 @@ def learning_curves(estimator, data, target, train_sizes, cv, stringg):
     plt.plot(train_sizes, validation_scores_mean, label = 'Validation error')
     plt.ylabel('MSE', fontsize = 14)
     plt.xlabel('Training set size', fontsize = 14)
-    title = 'Learning curves for a ' + str(estimator).split('(')[0] + str(stringg)+' model, cv_par = ' + str(cv)
+    title = str(stringg)
     plt.title(title, fontsize = 18, y = 1.03)
     plt.legend()
     # plt.ylim(0,40)
@@ -398,7 +421,7 @@ def learning_curves(estimator, data, target, train_sizes, cv, stringg):
     plt.plot(train_sizes, validation_scores_mean, label = 'Validation error')
     plt.ylabel('MAPE', fontsize = 14)
     plt.xlabel('Training set size', fontsize = 14)
-    title = 'Learning curves for a ' + str(estimator).split('(')[0] + str(stringg)+' model, cv_par = ' + str(cv)
+    title = str(stringg)
     plt.title(title, fontsize = 18, y = 1.03)
     plt.legend()
     # plt.savefig('fig_LinPol/MAPELearnCurv' + str(stringg) +'.png')
@@ -454,13 +477,65 @@ y_all = y_train.append(y_test, ignore_index=True)
 lr = LinearRegression()
 lr.fit(X_train_scaled_poly, y_train)
 
-plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "hour_P" + str(Degree) + "_04",  plot_intervals=True,\
+plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = " Polynomial, Deg = 2, + hour",  plot_intervals=True,\
                  y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test, plot_diff = True)
 plotCoefficients(lr, X_train=X_train_scaled_poly)
 
-learning_curves(LinearRegression(), X_all_scaled_poly, y_all, List_Train_Size, 10, 'hour_P2_04')
+learning_curves(LinearRegression(), X_all_scaled_poly, y_all, List_Train_Size, 30, " Polynomial, Deg = 2, + hour")
 
 # learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size,10, 'hour')
+
+
+
+from sklearn.linear_model import LassoCV, RidgeCV
+
+                                                     # Lin Ridge Scaled with hour and weekday
+
+# ridge = RidgeCV(cv=tscv)
+# ridge.fit(X_train_scaled, y_train)
+
+# plotModelResults(ridge, X_train = X_train_scaled, X_test=X_test_scaled, plot_intervals=True, string ="sc_lin Ridge with h,d")
+# plotCoefficients(ridge, X_train = X_train_scaled)
+
+                                                     # Pol Ridge Scaled with hour and weekday
+
+ridge = RidgeCV(cv=tscv)
+ridge.fit(X_train_scaled_poly, y_train)
+plotModelResults(ridge, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = " Polynomial,Ridge, CO > 0.4",  plot_intervals=True,\
+                 plot_anomalies = True, y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
+plotCoefficients(ridge, X_train = X_train_scaled_poly)
+
+                                                     # Lin LASSO Scaled with hour and weekday
+
+
+# lasso = LassoCV(cv=tscv)
+# lasso.fit(X_train_scaled, y_train)
+
+# plotModelResults(lasso, X_train = X_train_scaled, X_test=X_test_scaled, plot_intervals=True, string ="sc_lin Lasso with h,d")
+# plotCoefficients(lasso, X_train = X_train_scaled)
+
+                                                     # Pol LASSO Scaled with hour and weekday
+
+
+lasso = LassoCV(cv=tscv)
+lasso.fit(X_train_scaled_poly, y_train)
+plotModelResults(lasso, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = " Polynomial,Lasso, CO > 0.4",  plot_intervals=True,\
+                 y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
+# plotCoefficients(lasso, X_train = X_train_scaled_poly, stringg = "Coefficients Lasso")
+
+
+#                      
+
+
+
+
+
+
+
+
+
+
+
 
 
                                                               # MEAN CO on hour
@@ -524,14 +599,14 @@ X_all_scaled_poly = X_train_scaled_poly.append(X_test_scaled_poly, ignore_index=
 y_all = y_train.append(y_test, ignore_index=True)
 
 
-lr = LinearRegression()
-lr.fit(X_train_scaled_poly, y_train)
+# lr = LinearRegression()
+# lr.fit(X_train_scaled_poly, y_train)
 
-plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "MeanH_P" + str(Degree) + "_04",  plot_intervals=True,\
-                 y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test, plot_diff = True)
-plotCoefficients(lr, X_train=X_train_scaled_poly)
+# plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "MeanH_P" + str(Degree) + "_04",  plot_intervals=True,\
+#                  y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test, plot_diff = True)
+# plotCoefficients(lr, X_train=X_train_scaled_poly)
 
-learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, 10, 'MeanH_P2_04')
+# learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, 10, 'MeanH_P2_04')
 
 
 plt.show()

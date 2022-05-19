@@ -27,7 +27,7 @@ rcParams['figure.figsize'] = 10, 8
 import datetime
 
 
-df = pd.read_csv('AirQualityUCI/AirQualityUCI.csv', sep = ';') 
+df = pd.read_csv('../AirQualityUCI/AirQualityUCI.csv', sep = ';') 
 
 
 features = list(df.columns)

@@ -23,7 +23,7 @@ from pylab import rcParams
 rcParams['figure.figsize'] = 10, 8 
 import datetime
 
-df = pd.read_csv('AirQualityUCI/AirQualityUCI.csv', sep = ';') 
+df = pd.read_csv('../AirQualityUCI/AirQualityUCI.csv', sep = ';') 
 features = list(df.columns)
 del features[0]
 del features[0]
@@ -58,8 +58,12 @@ feat_CO = ['PT08.S1(CO)', 'PT08.S2(NMHC)', 'T' , 'CO(GT)']
 
 Degree = 2
 # list_delete = []
-list_delete = ['T^2','PT08.S2(NMHC)^2']
-T_size = 0.3
+# list_delete = ['T^2','PT08.S2(NMHC)^2']
+
+# list_delete = ['T^2','R_CO^2','R_NM^2']
+list_delete = ['T^2', 'R_NM^2']
+
+T_size = 2000
 
 feat_target = feat_CO[-1]
 l_feat = len(feat_CO) - 1
@@ -68,6 +72,12 @@ for feat in feat_CO:
     df_new = df_new[df_new[feat] > -100]
 
 data = pd.DataFrame(df_new[['datetime'] + feat_CO].copy())
+
+
+# data.rename(columns = {'PT08.S1(CO)':'R_CO'}, inplace = True)
+data.rename(columns = {'PT08.S1(CO)':'R_CO', 'PT08.S2(NMHC)':'R_NM'}, inplace = True)
+# data.rename(columns = {'PT08.S2(NMHC)':'R_NM'}, inplace = True)
+
 print(data.tail(7))
 y = data.dropna()[feat_target]
 X = data.dropna().drop([feat_target], axis=1)
@@ -81,7 +91,15 @@ def mean_s_error(y_true, y_pred):
     return np.mean((y_true - y_pred)**2)
 # for time-series cross-validation set 5 folds
 tscv = TimeSeriesSplit(n_splits=5)
+
 def timeseries_train_test_split(X, y, test_size):
+    if test_size > 1:
+        test_index = int(test_size)
+        X_train = X.iloc[:test_index]
+        y_train = y.iloc[:test_index]
+        X_test = X.iloc[test_index:]
+        y_test = y.iloc[test_index:]
+        return X_train, X_test, y_train, y_test        
     if test_size == 1:
         test_index = int(len(X))
         X_train = X.iloc[:test_index]
@@ -98,7 +116,7 @@ def timeseries_train_test_split(X, y, test_size):
         return X_train, X_test, y_train, y_test
 
 # reserve 30% of data for testing
-X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = T_size)
+X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 2000)
 
 time_train = X_train.dropna()['datetime']
 time_test = X_test.dropna()['datetime']
@@ -136,7 +154,7 @@ def plotModelResults(
     plt.tight_layout()
     plt.grid(True)
 
-def plotCoefficients(model, X_train = X_train):
+def plotCoefficients(model, X_train = X_train, stringg = ""):
     coefs = pd.DataFrame(model.coef_, X_train.columns)
     coefs.columns = ["coef"]
     coefs["abs"] = coefs.coef.apply(np.abs)
@@ -144,7 +162,8 @@ def plotCoefficients(model, X_train = X_train):
     plt.figure(figsize=(15, 7))
     coefs.coef.plot(kind="bar")
     plt.grid(True, axis="y")
-    plt.hlines(y=0, xmin=0, xmax=len(coefs), linestyles="dashed");
+    plt.hlines(y=0, xmin=0, xmax=len(coefs), linestyles="dashed")
+    plt.title(stringg)
 
 
                                                                             # Polinomial Features
@@ -181,10 +200,10 @@ X_test_poly  = X_test_poly.dropna().drop(list_delete, axis=1)
                                                             
                                                                       # Pol
         
-lr = LinearRegression()
-lr.fit(X_train_poly, y_train)
-plotModelResults(lr, X_train=X_train_poly, X_test=X_test_poly, string =  "pol degree = " + str(Degree),  plot_intervals=True)
-plotCoefficients(lr, X_train=X_train_poly)
+# lr = LinearRegression()
+# lr.fit(X_train_poly, y_train)
+# plotModelResults(lr, X_train=X_train_poly, X_test=X_test_poly, string =  "Polynomial deg = " + str(Degree),  plot_intervals=True)
+# plotCoefficients(lr, X_train=X_train_poly)
 
                                                                     # Scaled Model
 from sklearn.preprocessing import StandardScaler
@@ -222,8 +241,30 @@ print(X_train_poly_scaled.columns)
 
 lr = LinearRegression()
 lr.fit(X_train_poly_scaled, y_train)
-plotModelResults(lr, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "pol_sc degree = " + str(Degree),  plot_intervals=True)
+plotModelResults(lr, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "Polynomial, Deg = " + str(Degree),  plot_intervals=True)
 plotCoefficients(lr, X_train=X_train_poly_scaled)
+
+
+
+from sklearn.linear_model import LassoCV, RidgeCV
+
+                                                     # Pol Ridge Scaled 
+
+ridge = RidgeCV(cv=tscv)
+ridge.fit(X_train_poly_scaled, y_train)
+plotModelResults(ridge, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Ridge, Deg =" + str(Degree), plot_anomalies=True)
+plotCoefficients(ridge, X_train = X_train_poly_scaled)
+
+                                                     # Pol LASSO Scaled 
+lasso = LassoCV(cv=tscv)
+lasso.fit(X_train_poly_scaled, y_train)
+plotModelResults(lasso, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Lasso, Deg =" + str(Degree))
+plotCoefficients(lasso, X_train = X_train_poly_scaled, stringg = "Coefficients Lasso")
+
+
+
+
+
 
                                                                 # Model Scaled with hour and weekday
 
@@ -233,7 +274,7 @@ data["hour"] = df_new['datetime'].dt.hour
 
 y = data.dropna()[feat_target]
 X = data.dropna().drop([feat_target], axis=1)
-X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=T_size)
+X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=2000)
 time_train = X_train.dropna()['datetime']
 time_test = X_test.dropna()['datetime']
 X_train = X_train.dropna().drop(['datetime'], axis=1)
@@ -268,7 +309,7 @@ X_test_poly_scaled['hour'] = X_test_scaled['hour']
 
 lr = LinearRegression()
 lr.fit(X_train_poly_scaled, y_train)
-plotModelResults(lr, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "sc_pol with h,d degree = " + str(Degree),  plot_intervals=True)
+plotModelResults(lr, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "Polynomial + hour, Deg = " + str(Degree),  plot_intervals=True)
 plotCoefficients(lr, X_train=X_train_poly_scaled)
         
 #                                                             # LASSO, RIDGE
@@ -287,7 +328,7 @@ from sklearn.linear_model import LassoCV, RidgeCV
 
 ridge = RidgeCV(cv=tscv)
 ridge.fit(X_train_poly_scaled, y_train)
-plotModelResults(ridge, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="sc_pol Ridge with h,d" + str(Degree))
+plotModelResults(ridge, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial + hour, Ridge, Deg =" + str(Degree), plot_anomalies=True)
 plotCoefficients(ridge, X_train = X_train_poly_scaled)
 
                                                      # Lin LASSO Scaled with hour and weekday
@@ -304,8 +345,8 @@ plotCoefficients(ridge, X_train = X_train_poly_scaled)
 
 lasso = LassoCV(cv=tscv)
 lasso.fit(X_train_poly_scaled, y_train)
-plotModelResults(lasso, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="sc_pol Lasso with h,d" + str(Degree))
-plotCoefficients(lasso, X_train = X_train_poly_scaled)
+plotModelResults(lasso, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial + hour, Lasso, Deg =" + str(Degree))
+plotCoefficients(lasso, X_train = X_train_poly_scaled, stringg = "Coefficients Lasso")
 
 
 #                                                                 # BOOSTING
@@ -321,7 +362,177 @@ xgb = XGBRegressor(verbosity=0)
 
                                                   # Pol XGBR Scaled with hour and weekday
 
-xgb.fit(X_train_poly_scaled, y_train);
-plotModelResults(xgb,X_train = X_train_poly_scaled,X_test=X_test_poly_scaled, plot_intervals=True, string ="sc_pol XGBR with h,d")
+# xgb.fit(X_train_poly_scaled, y_train);
+# plotModelResults(xgb,X_train = X_train_poly_scaled,X_test=X_test_poly_scaled, plot_intervals=True, string ="sc_pol XGBR with h,d")
+
+
+
+
+
+
+
+# MeanCo_hour = np.array([np.NaN] * 24)
+# ar_hour = range(24)
+# for i in range(24):
+#     MeanCo_hour[i] = data[data['hour'] == i]['CO(GT)'].mean()
+
+# data["hour"] = df_new['datetime'].dt.hour
+# data["COmean"] = MeanCo_hour[data["hour"]]
+# # data["weekday"] = df_new['datetime'].dt.weekday
+# y = data.dropna()[feat_target]
+# X = data.dropna().drop([feat_target], axis=1)
+
+# X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=2000)
+# # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 2000)
+
+# time_train = X_train.dropna()['datetime']
+# time_test = X_test.dropna()['datetime']
+# X_train = X_train.dropna().drop(['datetime'], axis=1)
+# X_test = X_test.dropna().drop(['datetime'], axis=1)
+
+# X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train))
+# X_test_scaled = pd.DataFrame(scaler.transform(X_test))
+# list_X = X_test.columns.values.tolist()
+# X_train_scaled.set_axis(list_X, axis = 'columns', inplace=True)
+# X_test_scaled.set_axis(list_X, axis = 'columns', inplace=True)
+
+# hour_train_scaled = X_train_scaled.dropna()['hour']
+# hour_test_scaled = X_test_scaled.dropna()['hour']
+# X_train_scaled = X_train_scaled.dropna().drop(['hour'], axis=1)
+# X_test_scaled = X_test_scaled.dropna().drop(['hour'], axis=1)
+
+# COmean_train_scaled = X_train_scaled.dropna()['COmean']
+# COmean_test_scaled = X_test_scaled.dropna()['COmean']
+# X_train_scaled = X_train_scaled.dropna().drop(['COmean'], axis=1)
+# X_test_scaled = X_test_scaled.dropna().drop(['COmean'], axis=1)
+
+# poly = PolynomialFeatures(degree=Degree)
+
+# X_train_poly_scaled = pd.DataFrame(poly.fit_transform(X_train_scaled))
+# X_test_poly_scaled = pd.DataFrame(poly.fit_transform(X_test_scaled))
+# list_poly_scaled =list(poly.get_feature_names_out())
+# X_train_poly_scaled.set_axis(list_poly_scaled, axis = 'columns', inplace=True)
+# X_test_poly_scaled.set_axis(list_poly_scaled, axis = 'columns', inplace=True)
+# X_train_poly_scaled = X_train_poly_scaled.dropna().drop(list_delete, axis=1)
+# X_test_poly_scaled  = X_test_poly_scaled.dropna().drop(list_delete, axis=1)
+
+# # X_train_poly_scaled['hour'] = hour_train_scaled
+# # X_test_poly_scaled['hour'] = hour_test_scaled
+
+# X_train_poly_scaled['COmean'] = COmean_train_scaled 
+# X_test_poly_scaled['COmean'] = COmean_test_scaled
+
+
+# lr = LinearRegression()
+# lr.fit(X_train_poly_scaled, y_train)
+# plotModelResults(lr, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "Polynomial, Deg = " + str(Degree),  plot_intervals=True)
+# plotCoefficients(lr, X_train=X_train_poly_scaled)
+
+
+#                                                      # Pol Ridge Scaled 
+
+# ridge = RidgeCV(cv=tscv)
+# ridge.fit(X_train_poly_scaled, y_train)
+# plotModelResults(ridge, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Ridge, Deg =" + str(Degree), plot_anomalies=True)
+# plotCoefficients(ridge, X_train = X_train_poly_scaled)
+
+#                                                      # Pol LASSO Scaled 
+# lasso = LassoCV(cv=tscv)
+# lasso.fit(X_train_poly_scaled, y_train)
+# plotModelResults(lasso, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Lasso, Deg =" + str(Degree))
+# plotCoefficients(lasso, X_train = X_train_poly_scaled, stringg = "Coefficients Lasso")
+
+
+
+
+
+
+
+
+
+
+MeanCo_hour = np.array([np.NaN] * 24)
+ar_hour = range(24)
+for i in range(24):
+    MeanCo_hour[i] = data[data['hour'] == i]['CO(GT)'].quantile(0.25)
+
+data["hour"] = df_new['datetime'].dt.hour
+data["CO_Q1"] = MeanCo_hour[data["hour"]]
+# data["weekday"] = df_new['datetime'].dt.weekday
+y = data.dropna()[feat_target]
+X = data.dropna().drop([feat_target], axis=1)
+
+X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=2000)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 2000)
+
+time_train = X_train.dropna()['datetime']
+time_test = X_test.dropna()['datetime']
+X_train = X_train.dropna().drop(['datetime'], axis=1)
+X_test = X_test.dropna().drop(['datetime'], axis=1)
+
+X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train))
+X_test_scaled = pd.DataFrame(scaler.transform(X_test))
+list_X = X_test.columns.values.tolist()
+X_train_scaled.set_axis(list_X, axis = 'columns', inplace=True)
+X_test_scaled.set_axis(list_X, axis = 'columns', inplace=True)
+
+hour_train_scaled = X_train_scaled.dropna()['hour']
+hour_test_scaled = X_test_scaled.dropna()['hour']
+X_train_scaled = X_train_scaled.dropna().drop(['hour'], axis=1)
+X_test_scaled = X_test_scaled.dropna().drop(['hour'], axis=1)
+
+COmean_train_scaled = X_train_scaled.dropna()['CO_Q1']
+COmean_test_scaled = X_test_scaled.dropna()['CO_Q1']
+X_train_scaled = X_train_scaled.dropna().drop(['CO_Q1'], axis=1)
+X_test_scaled = X_test_scaled.dropna().drop(['CO_Q1'], axis=1)
+
+poly = PolynomialFeatures(degree=Degree)
+
+X_train_poly_scaled = pd.DataFrame(poly.fit_transform(X_train_scaled))
+X_test_poly_scaled = pd.DataFrame(poly.fit_transform(X_test_scaled))
+list_poly_scaled =list(poly.get_feature_names_out())
+X_train_poly_scaled.set_axis(list_poly_scaled, axis = 'columns', inplace=True)
+X_test_poly_scaled.set_axis(list_poly_scaled, axis = 'columns', inplace=True)
+X_train_poly_scaled = X_train_poly_scaled.dropna().drop(list_delete, axis=1)
+X_test_poly_scaled  = X_test_poly_scaled.dropna().drop(list_delete, axis=1)
+
+# X_train_poly_scaled['hour'] = hour_train_scaled
+# X_test_poly_scaled['hour'] = hour_test_scaled
+
+X_train_poly_scaled['CO_Q1'] = COmean_train_scaled 
+X_test_poly_scaled['CO_Q1'] = COmean_test_scaled
+
+
+lr = LinearRegression()
+lr.fit(X_train_poly_scaled, y_train)
+plotModelResults(lr, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "Polynomial, Deg = " + str(Degree),  plot_intervals=True)
+plotCoefficients(lr, X_train=X_train_poly_scaled)
+
+
+                                                     # Pol Ridge Scaled 
+
+ridge = RidgeCV(cv=tscv)
+ridge.fit(X_train_poly_scaled, y_train)
+plotModelResults(ridge, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Q1_CO(hour), Ridge, Deg =" + str(Degree), plot_anomalies=True)
+plotCoefficients(ridge, X_train = X_train_poly_scaled)
+
+                                                     # Pol LASSO Scaled 
+lasso = LassoCV(cv=tscv)
+lasso.fit(X_train_poly_scaled, y_train)
+plotModelResults(lasso, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Lasso, Deg =" + str(Degree))
+plotCoefficients(lasso, X_train = X_train_poly_scaled, stringg = "Coefficients Lasso")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 plt.show()

@@ -24,7 +24,7 @@ from pylab import rcParams
 rcParams['figure.figsize'] = 10, 8 
 import datetime
 
-df = pd.read_csv('AirQualityUCI/AirQualityUCI.csv', sep = ';') 
+df = pd.read_csv('../AirQualityUCI/AirQualityUCI.csv', sep = ';') 
 features = list(df.columns)
 del features[0]
 del features[0]
@@ -45,14 +45,14 @@ for feat in features:
 
                                                                             # GLOBAL VAR
 
-feat_CO = ['PT08.S1(CO)', 'PT08.S2(NMHC)', 'T' , 'CO(GT)']
-# feat_CO = ['PT08.S1(CO)', 'CO(GT)']
+# feat_CO = ['PT08.S1(CO)', 'PT08.S2(NMHC)', 'T' , 'CO(GT)']
+feat_CO = ['PT08.S1(CO)', 'CO(GT)']
 # feat_CO = ['PT08.S2(NMHC)', 'T' , 'CO(GT)']
 # feat_CO = ['PT08.S1(CO)', 'CO(GT)']
-Degree = 2
-# list_delete = []
-list_delete = ['T^2','PT08.S2(NMHC)^2']
-T_size = 0.3
+Degree = 1
+list_delete = []
+# list_delete = ['T^2','PT08.S2(NMHC)^2']
+T_size = 2000
 
 feat_target = feat_CO[-1]
 l_feat = len(feat_CO) - 1
@@ -76,6 +76,13 @@ def mean_s_error(y_true, y_pred):
 # for time-series cross-validation set 5 folds
 tscv = TimeSeriesSplit(n_splits=5)
 def timeseries_train_test_split(X, y, test_size):
+    if test_size > 1:
+        test_index = int(test_size)
+        X_train = X.iloc[:test_index]
+        y_train = y.iloc[:test_index]
+        X_test = X.iloc[test_index:]
+        y_test = y.iloc[test_index:]
+        return X_train, X_test, y_train, y_test
     if test_size == 1:
         test_index = int(len(X))
         X_train = X.iloc[:test_index]
@@ -90,6 +97,7 @@ def timeseries_train_test_split(X, y, test_size):
         X_test = X.iloc[test_index:]
         y_test = y.iloc[test_index:]
         return X_train, X_test, y_train, y_test
+
 
 from sklearn.model_selection import train_test_split
 X_train = pd.DataFrame()
@@ -146,7 +154,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 
-List_Train_Size = np.arange(0.01,1.0,0.05)
+List_Train_Size = np.arange(0.01,1.0,0.02)
 List_MAPE = np.array([np.NaN] * len(List_Train_Size))
 List_MSE = np.array([np.NaN] * len(List_Train_Size))
 len_temp = 2
@@ -211,8 +219,8 @@ MAPE_temp = np.array([np.NaN] * len_temp)
 
 from sklearn.model_selection import learning_curve
 
-# X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 1.0 - t_size)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
+X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 2000)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 2000)
 
 time_train = X_train.dropna()['datetime']
 time_test = X_test.dropna()['datetime']
@@ -251,26 +259,45 @@ def learning_curves(estimator, data, target, train_sizes, cv, stringg):
     estimator, data, target, train_sizes = train_sizes,
     cv = cv, scoring = 'neg_mean_squared_error')
     # 'neg_mean_squared_error''neg_mean_absolute_percentage_error'
-    train_scores_mean = -train_scores.mean(axis = 1)    
+    train_scores_mean = -train_scores.mean(axis = 1)
     validation_scores_mean = -validation_scores.mean(axis = 1)
+    plt.figure(figsize = (16,10))
     plt.plot(train_sizes, train_scores_mean, label = 'Training error')
     plt.plot(train_sizes, validation_scores_mean, label = 'Validation error')
+
     plt.ylabel('MSE', fontsize = 14)
     plt.xlabel('Training set size', fontsize = 14)
-    title = 'Learning curves for a ' + str(estimator).split('(')[0] + str(stringg)+' model, cv_par = ' + str(cv)
+    title = 'Learning curves. MSE. ' + stringg
     plt.title(title, fontsize = 18, y = 1.03)
     plt.legend()
     # plt.ylim(0,40)
-
-for cv_par in range(2,30, 10):
+    # plt.savefig('fig_LinPol/MSELearnCurv' + str(stringg) +'.png')
+    train_sizes, train_scores, validation_scores = learning_curve(
+    estimator, data, target, train_sizes = train_sizes,
+    cv = cv, scoring = 'neg_mean_absolute_percentage_error')
+    train_scores_mean = -train_scores.mean(axis = 1)
+    validation_scores_mean = -validation_scores.mean(axis = 1)
     plt.figure(figsize = (16,10))
-    learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, cv_par, ' no hour ')
+    plt.plot(train_sizes, train_scores_mean, label = 'Training error')
+    plt.plot(train_sizes, validation_scores_mean, label = 'Validation error')
+    plt.ylabel('MAPE', fontsize = 14)
+    plt.xlabel('Training set size', fontsize = 14)
+    title = 'Learning curves. MAPE. ' + stringg
+    plt.title(title, fontsize = 18, y = 1.03)
+    plt.legend()
+    # plt.savefig('fig_LinPol/MAPELearnCurv' + str(stringg) +'.png')
+    
 
-# lr = LinearRegression()
-# lr.fit(X_train_scaled_poly, y_train)
+learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, 30, 'no hour')
 
-# plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "sc_pol, degree = " + str(Degree),  plot_intervals=True, y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
-# plotCoefficients(lr, X_train=X_train_scaled_poly)
+# for cv_par in range(2,30, 10):
+#     plt.figure(figsize = (16,10))
+#     learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, cv_par, ' no hour ')
+
+lr = LinearRegression()
+lr.fit(X_train_scaled_poly, y_train)
+plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "sc_pol, degree = " + str(Degree),  plot_intervals=True, y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
+plotCoefficients(lr, X_train=X_train_scaled_poly)
 
                                                                 # Model Scaled with hour and weekday
 
@@ -279,8 +306,8 @@ data["hour"] = df_new['datetime'].dt.hour
 y = data.dropna()[feat_target]
 X = data.dropna().drop([feat_target], axis=1)
 
-# X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=T_size)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = T_size)
+X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=2000)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = T_size)
 
 time_train = X_train.dropna()['datetime']
 time_test = X_test.dropna()['datetime']
@@ -314,33 +341,43 @@ X_test_scaled_poly['hour'] = hour_test_scaled
 X_all_scaled_poly = X_train_scaled_poly.append(X_test_scaled_poly, ignore_index=True) 
 y_all = y_train.append(y_test, ignore_index=True)
 
-for cv_par in range(2, 30, 10):
-    plt.figure(figsize = (16,10))
-    learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, cv_par, ' +hour ')
+
+lr = LinearRegression()
+lr.fit(X_train_scaled_poly, y_train)
+plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "sc_pol, degree = " + str(Degree),  plot_intervals=True, y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
+plotCoefficients(lr, X_train=X_train_scaled_poly)
+
+# plt.figure(figsize = (16,10))
+learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, 30, 'hour')
+
+
+# for cv_par in range(2, 30, 10):
+#     plt.figure(figsize = (16,10))
+#     learning_curves(LinearRegression(), X_all_scaled_poly, y_all,List_Train_Size, cv_par, ' +hour ')
 
                                                                 # Pol Scaled with hour and weekday
         
                                                             # LASSO, RIDGE
 
-from sklearn.linear_model import LassoCV, RidgeCV
-from sklearn.linear_model import Lasso, Ridge
-                                                     # Pol Ridge Scaled with hour and weekday
+# from sklearn.linear_model import LassoCV, RidgeCV
+# from sklearn.linear_model import Lasso, Ridge
+#                                                      # Pol Ridge Scaled with hour and weekday
 
-for cv_par in range(2, 30, 10):
-    plt.figure(figsize = (16,10))
-    learning_curves(RidgeCV(cv=tscv), X_all_scaled_poly, y_all,List_Train_Size, cv_par, ' +hour ')
+# for cv_par in range(2, 30, 10):
+#     plt.figure(figsize = (16,10))
+#     learning_curves(RidgeCV(cv=tscv), X_all_scaled_poly, y_all,List_Train_Size, cv_par, ' +hour ')
 
 
-                                                     # Pol LASSO Scaled with hour and weekday
+#                                                      # Pol LASSO Scaled with hour and weekday
 
-for cv_par in range(2, 30, 10):
-    plt.figure(figsize = (16,10))
-    learning_curves(LassoCV(cv=tscv), X_all_scaled_poly, y_all,List_Train_Size, cv_par, ' +hour ')
+# for cv_par in range(2, 30, 10):
+#     plt.figure(figsize = (16,10))
+#     learning_curves(LassoCV(cv=tscv), X_all_scaled_poly, y_all,List_Train_Size, cv_par, ' +hour ')
 
 
                                                                 # BOOSTING
 
-from xgboost import XGBRegressor
+# from xgboost import XGBRegressor
 
 #                                                   # Pol XGBR Scaled with hour and weekday
 
@@ -349,9 +386,9 @@ from xgboost import XGBRegressor
 # # # xgb.fit(X_train_scaled_poly, y_train)
 # # # plotModelResults(xgb,X_train = X_train_scaled_poly,X_test=X_test_scaled_poly, plot_intervals=True, string ="sc_pol XGBR with h,d", y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
 
-for cv_par in range(2, 30, 10):
-    plt.figure(figsize = (16,10))
-    learning_curves(XGBRegressor(verbosity=0), X_all_scaled_poly, y_all,List_Train_Size, cv_par, ' +hour ')
+# for cv_par in range(2, 30, 10):
+#     plt.figure(figsize = (16,10))
+#     learning_curves(XGBRegressor(verbosity=0), X_all_scaled_poly, y_all,List_Train_Size, cv_par, ' +hour ')
 
 # plt.plot(X_all_scaled_poly['hour'], y_all, label="C(hour)", marker = 'o',markersize=3, linestyle = 'None', color = "green")
     

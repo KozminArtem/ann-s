@@ -1,4 +1,4 @@
-# Опреление средних значений и квантилей показаний датчика от температуры
+# Опреление средних значений и квантилей концентрации CO от температуры
 # Не было выявлено зависимости значений концентраций от температуры
 # Был добавлен столбец часов и выходных
 # Рисует графики сопротивлений от температуры
@@ -30,7 +30,7 @@ rcParams['figure.figsize'] = 10, 8
 import datetime
 
 
-df = pd.read_csv('AirQualityUCI/AirQualityUCI.csv', sep = ';') 
+df = pd.read_csv('../AirQualityUCI/AirQualityUCI.csv', sep = ';') 
 
 
 features = list(df.columns)
@@ -57,8 +57,8 @@ df_new['datetime'] = pd.Series([datetime.datetime.combine(df['Date'][i], df['Tim
 for feat in features:
     df_new[feat] = df[feat]
 
-# feat_CO = ['PT08.S1(CO)','T', 'CO(GT)']
 feat_CO = ['PT08.S1(CO)', 'CO(GT)']
+# feat_CO = ['PT08.S1(CO)', 'CO(GT)']
 # feat_CO = ['PT08.S1(CO)','T','RH', 'CO(GT)']
 # лучшие результаты на 28%
 feat_target = feat_CO[-1]
@@ -86,11 +86,11 @@ for k in range(N_bin):
     df_temp = df_new[df_new['T'] >= T_min + (T_max-T_min)*(k/N_bin)]
     df_temp = df_temp[df_new['T'] <= T_min + (T_max-T_min) * ((k+1)/N_bin)]
     Arr_CO_T[k] = T_min + (T_max-T_min) * ((k+0.5)/N_bin)
-    Arr_CO_min[k] = df_temp['PT08.S1(CO)'].min()
-    Arr_CO_Q1[k]  = df_temp['PT08.S1(CO)'].quantile(0.25)
-    Arr_CO_Q3[k]  = df_temp['PT08.S1(CO)'].quantile(0.5)
+    Arr_CO_min[k] = df_temp['CO(GT)'].min()
+    Arr_CO_Q1[k]  = df_temp['CO(GT)'].quantile(0.25)
+    Arr_CO_Q3[k]  = df_temp['CO(GT)'].quantile(0.5)
     Arr_CO_QX[k]  = Arr_CO_Q1[k] - 1.0*(Arr_CO_Q3[k] - Arr_CO_Q1[k])     
-    # sns.boxplot(x = 'PT08.S1(CO)', data = df_temp, ax = axes[k//4][k % 4]);
+    # sns.boxplot(x = 'CO(GT)', data = df_temp, ax = axes[k//4][k % 4]);
   
 def func_exp(x, a, b, c):
     # return a*np.exp(b*x) + c
@@ -98,31 +98,34 @@ def func_exp(x, a, b, c):
 
 plt.figure(figsize=(15, 7))
 
-plt.plot(df_new['T'],df_new['PT08.S1(CO)'],label=str("CO (T)"), marker = 'o', linestyle = 'None', color = "black")
+plt.plot(df_new['T'],df_new['CO(GT)'],label=str("CO (T)"), marker = 'o',markersize = 2.5, linestyle = 'None', color = "black")
 
 popt_min, pcov_min = curve_fit(func_exp, Arr_CO_T, Arr_CO_min)
 # print ("a = %s , b = %s, c = %s" % (popt[0], popt[1], popt[2]))
-plt.plot(Arr_CO_T, Arr_CO_min, label = "Min",marker = 'o', linestyle = 'None',  color = "r")
-plt.plot(Arr_CO_T, func_exp(Arr_CO_T, *popt_min), label="Fitted Min", color = "r")
+plt.plot(Arr_CO_T, Arr_CO_min, label = "Min CO",marker = 'o',markersize = 10, linestyle = 'None',  color = "r")
+plt.plot(Arr_CO_T, func_exp(Arr_CO_T, *popt_min), label="Fit Min", color = "r", linewidth=3.0)
 
 df_new['I0_min'] = func_exp(df_new['T'], *popt_min) 
 
 popt_Q1, pcov_Q1 = curve_fit(func_exp, Arr_CO_T, Arr_CO_Q1)
 # print ("a = %s , b = %s, c = %s" % (popt[0], popt[1], popt[2]))
-plt.plot(Arr_CO_T, Arr_CO_Q1, label = "Q1",marker = 'o', linestyle = 'None', color = "g")
-plt.plot(Arr_CO_T, func_exp(Arr_CO_T, *popt_Q1), label="Fitted Q1", color = "g")
+plt.plot(Arr_CO_T, Arr_CO_Q1, label = "first quartile",marker = 'o',markersize = 10, linestyle = 'None', color = "g")
+plt.plot(Arr_CO_T, func_exp(Arr_CO_T, *popt_Q1), label="Fit Q1", color = "g", linewidth=3.0)
 
 df_new['I0_Q1'] = func_exp(df_new['T'], *popt_Q1) 
 
-popt_QX, pcov_QX = curve_fit(func_exp, Arr_CO_T, Arr_CO_QX)
-# print ("a = %s , b = %s, c = %s" % (popt[0], popt[1], popt[2]))
-plt.plot(Arr_CO_T, Arr_CO_QX, label = "QX",marker = 'o', linestyle = 'None', color = "b")
-plt.plot(Arr_CO_T, func_exp(Arr_CO_T, *popt_QX), label="Fitted QX", color = "b")
+# popt_QX, pcov_QX = curve_fit(func_exp, Arr_CO_T, Arr_CO_QX)
+# # print ("a = %s , b = %s, c = %s" % (popt[0], popt[1], popt[2]))
+# plt.plot(Arr_CO_T, Arr_CO_QX, label = "QX",marker = 'o', linestyle = 'None', color = "b")
+# plt.plot(Arr_CO_T, func_exp(Arr_CO_T, *popt_QX), label="Fitted QX", color = "b")
 
-df_new['I0_QX'] = func_exp(df_new['T'], *popt_QX)
+# df_new['I0_QX'] = func_exp(df_new['T'], *popt_QX)
 
-
+df_new['I*T'] = df_new['T']*df_new['PT08.S1(CO)']
+df_new['T^2'] = df_new['T']*df_new['T']
+        
 plt.legend(loc="best")
+plt.title("CO (Temperature)")
 
 # sns.jointplot(x = 'T', y = 'PT08.S1(CO)', data = df_new, kind = 'scatter')
 # sns.jointplot(x = 'T', y = 'PT08.S1(CO)', data = df_new, kind = 'kde', color = "g")
@@ -143,7 +146,8 @@ plt.legend(loc="best")
 
 																		# linear regression
 
-data = pd.DataFrame(df_new[['datetime'] + ['I0_QX'] + feat_CO ].copy())
+data = pd.DataFrame(df_new[['datetime'] + feat_CO].copy())
+# data = pd.DataFrame(df_new[['datetime'] + ['I0_QX'] + feat_CO ].copy())
 print(data.tail(7))
 
 from sklearn.linear_model import LinearRegression
@@ -161,22 +165,34 @@ def mean_s_error(y_true, y_pred):
 tscv = TimeSeriesSplit(n_splits=5)
 
 def timeseries_train_test_split(X, y, test_size):
-    """
-        Perform train-test split with respect to time series structure
-    """
-    # get the index after which test set starts
-    test_index = int(len(X) * (1 - test_size))
-    X_train = X.iloc[:test_index]
-    y_train = y.iloc[:test_index]
-    X_test = X.iloc[test_index:]
-    y_test = y.iloc[test_index:]
-    return X_train, X_test, y_train, y_test
+    if test_size > 1:
+        test_index = int(test_size)
+        X_train = X.iloc[:test_index]
+        y_train = y.iloc[:test_index]
+        X_test = X.iloc[test_index:]
+        y_test = y.iloc[test_index:]
+        return X_train, X_test, y_train, y_test        
+    if test_size == 1:
+        test_index = int(len(X))
+        X_train = X.iloc[:test_index]
+        y_train = y.iloc[:test_index]
+        X_test = X.iloc[:test_index]
+        y_test = y.iloc[:test_index]
+        return X_train, X_test, y_train, y_test
+    else:
+        test_index = int(len(X) * (1 - test_size))
+        X_train = X.iloc[:test_index]
+        y_train = y.iloc[:test_index]
+        X_test = X.iloc[test_index:]
+        y_test = y.iloc[test_index:]
+        return X_train, X_test, y_train, y_test
+
 
 y = data.dropna()[feat_target]
 X = data.dropna().drop([feat_target], axis=1)
 
 # reserve 30% of data for testing
-X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=0.3)
+X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=2000)
 
 time_train = X_train.dropna()['datetime']
 time_test = X_test.dropna()['datetime']
@@ -231,11 +247,11 @@ def plotCoefficients(model):
 
 
 
-# machine learning in two lines
-lr = LinearRegression()
-lr.fit(X_train, y_train)
-plotModelResults(lr, plot_intervals=True)
-plotCoefficients(lr)
+# # machine learning in two lines
+# lr = LinearRegression()
+# lr.fit(X_train, y_train)
+# plotModelResults(lr, plot_intervals=True)
+# plotCoefficients(lr)
 
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
@@ -248,35 +264,6 @@ lr.fit(X_train_scaled, y_train)
 
 plotModelResults(lr, X_train=X_train_scaled, X_test=X_test_scaled, string = " scaled", plot_intervals=True)
 plotCoefficients(lr)
-
-
-data["hour"] = df_new['datetime'].dt.hour
-data["weekday"] = df_new['datetime'].dt.weekday
-# data["is_weekend"] = df_new['datetime'].dt.weekday.isin([5, 6]) * 1
-# data.tail()
-
-y = data.dropna()[feat_target]
-X = data.dropna().drop([feat_target], axis=1)
-
-X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=0.3)
-
-time_train = X_train.dropna()['datetime']
-time_test = X_test.dropna()['datetime']
-
-X_train = X_train.dropna().drop(['datetime'], axis=1)
-X_test = X_test.dropna().drop(['datetime'], axis=1)
-
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-
-
-lr = LinearRegression()
-lr.fit(X_train_scaled, y_train)
-
-plotModelResults(lr, X_train=X_train_scaled, X_test=X_test_scaled,string =" scaled with hour", plot_intervals=True)
-plotCoefficients(lr)
-
 
 
 from sklearn.linear_model import LassoCV, RidgeCV
@@ -306,6 +293,74 @@ plotModelResults(
     plot_intervals=True,
     plot_anomalies=True,
     string =" scaled Lasso"
+)
+plotCoefficients(lasso)
+
+
+
+
+
+
+
+
+
+
+
+
+
+data["hour"] = df_new['datetime'].dt.hour
+# data["weekday"] = df_new['datetime'].dt.weekday
+# data["is_weekend"] = df_new['datetime'].dt.weekday.isin([5, 6]) * 1
+# data.tail()
+
+y = data.dropna()[feat_target]
+X = data.dropna().drop([feat_target], axis=1)
+
+X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=2000)
+
+time_train = X_train.dropna()['datetime']
+time_test = X_test.dropna()['datetime']
+
+X_train = X_train.dropna().drop(['datetime'], axis=1)
+X_test = X_test.dropna().drop(['datetime'], axis=1)
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+
+
+lr = LinearRegression()
+lr.fit(X_train_scaled, y_train)
+
+plotModelResults(lr, X_train=X_train_scaled, X_test=X_test_scaled,string =" scaled with hour", plot_intervals=True)
+plotCoefficients(lr)
+
+
+ridge = RidgeCV(cv=tscv)
+ridge.fit(X_train_scaled, y_train)
+
+plotModelResults(
+    ridge,
+    X_train=X_train_scaled,
+    X_test=X_test_scaled,
+    plot_intervals=True,
+    plot_anomalies=True,
+    string =" scaled + hour Ridge"
+)
+plotCoefficients(ridge)
+
+
+
+lasso = LassoCV(cv=tscv)
+lasso.fit(X_train_scaled, y_train)
+
+plotModelResults(
+    lasso,
+    X_train=X_train_scaled,
+    X_test=X_test_scaled,
+    plot_intervals=True,
+    plot_anomalies=True,
+    string =" scaled + hour Lasso"
 )
 plotCoefficients(lasso)
 

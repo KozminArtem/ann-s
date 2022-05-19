@@ -21,7 +21,7 @@ from sklearn.model_selection import TimeSeriesSplit  # you have everything done 
 from pylab import rcParams
 rcParams['figure.figsize'] = 10, 8 
 import datetime
-df = pd.read_csv('AirQualityUCI/AirQualityUCI.csv', sep = ';') 
+df = pd.read_csv('../AirQualityUCI/AirQualityUCI.csv', sep = ';') 
 features = list(df.columns)
 del features[0]
 del features[0]
@@ -68,6 +68,13 @@ def mean_s_error(y_true, y_pred):
 # for time-series cross-validation set 5 folds
 tscv = TimeSeriesSplit(n_splits=5)
 def timeseries_train_test_split(X, y, test_size):
+    if test_size > 1:
+        test_index = int(test_size)
+        X_train = X.iloc[:test_index]
+        y_train = y.iloc[:test_index]
+        X_test = X.iloc[test_index:]
+        y_test = y.iloc[test_index:]
+        return X_train, X_test, y_train, y_test        
     if test_size == 1:
         test_index = int(len(X))
         X_train = X.iloc[:test_index]
@@ -347,9 +354,15 @@ from sklearn.linear_model import Lasso, Ridge
     
 plt.figure(figsize = (16,10))
 sns.boxplot(x = 'hour', y = 'CO(GT)', data = data)
+plt.title("Box Plot. CO(hour)")
+plt.savefig('../fig_AQ/Box_CO_hour.png')
+
 
 plt.figure(figsize = (16,10))
 sns.boxplot(x = 'hour', y = 'PT08.S1(CO)', data = data)
+plt.title("Box Plot. R_CO(hour)")
+plt.savefig('../fig_AQ/Box_R_CO_hour.png')
+
 
 plt.figure(figsize = (16,10))
 sns.boxplot(x = 'hour', y = 'T', data = data)
@@ -453,7 +466,36 @@ X_test_scaled_poly['COmean'] = COmean_test_scaled
 X_all_scaled_poly = X_train_scaled_poly.append(X_test_scaled_poly, ignore_index=True) 
 y_all = y_train.append(y_test, ignore_index=True)
 
-List_Train_Size = np.arange(0.01,1.0,0.01)
+
+# lr = LinearRegression()
+# lr.fit(X_train_scaled_poly, y_train)
+# plotModelResults(lr, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "sc_pol with mean hour degree = " + str(Degree),  plot_intervals=True, y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
+# plotCoefficients(lr, X_train=X_train_scaled_poly)
+
+        
+# #                                                             # LASSO, RIDGE
+# from sklearn.linear_model import LassoCV, RidgeCV
+#                                                      # Pol Ridge Scaled with hour and weekday
+
+# ridge = RidgeCV(cv=tscv)
+# ridge.fit(X_train_scaled_poly, y_train)
+# plotModelResults(ridge, X_train = X_train_scaled_poly, X_test=X_test_scaled_poly, plot_intervals=True, string ="sc_pol Ridge with h,d" + str(Degree), y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
+# plotCoefficients(ridge, X_train = X_train_scaled_poly)
+
+#                                                      # Pol LASSO Scaled with hour and weekday
+
+
+# lasso = LassoCV(cv=tscv)
+# lasso.fit(X_train_scaled_poly, y_train)
+# plotModelResults(lasso, X_train = X_train_scaled_poly, X_test=X_test_scaled_poly, plot_intervals=True, string ="sc_pol Lasso with h,d" + str(Degree), y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
+# plotCoefficients(lasso, X_train = X_train_scaled_poly)
+
+
+
+
+
+
+# List_Train_Size = np.arange(0.01,1.0,0.01)
 
 # for cv_par in range(2,30, 10):
 #     plt.figure(figsize = (16,10))

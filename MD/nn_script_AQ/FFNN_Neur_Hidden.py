@@ -99,10 +99,7 @@ print(df_new['CO(GT)'].max())
 data = pd.DataFrame(df_new[['datetime'] + feat_CO].copy())
 print(data.tail(7))
 
-
 data.rename(columns = {'PT08.S1(CO)':'R_CO', 'PT08.S2(NMHC)':'R_NM'}, inplace = True)
-
-
 
 y = data.dropna()[feat_target]
 X = data.dropna().drop([feat_target], axis=1)
@@ -698,12 +695,9 @@ for count, neur in enumerate(List_Neur):
     for j in range(3):
         network = models.Sequential()
         l_feat = X_train_scaled_poly.shape[1]
-
         network.add(layers.Dense(units = neur, activation = 'tanh', input_shape=(l_feat,)))
         network.add(layers.Dense(units=1, activation = 'linear'))
-
         network.compile(loss='mean_squared_error', optimizer= keras.optimizers.Adam(0.005), metrics=['mean_squared_error']) 
-
         history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 100, validation_split = 0.1)
         # plot_loss(history, string_l = "NN tanh" + str(neur))
         MSE_Train_temp[j] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    

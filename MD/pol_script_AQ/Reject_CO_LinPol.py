@@ -68,8 +68,6 @@ Degree = 2
 # list_delete = []
 list_delete = ['T^2','R_NM^2']
 # list_delete = ['T^2','PT08.S2(NMHC)^2']
-
-
 T_size = 0.9
 
 
@@ -145,12 +143,6 @@ def arr_gate_rate_error(y_true,y_pred):
 tscv = TimeSeriesSplit(n_splits=5)
 
 def timeseries_train_test_split(X, y, test_size):
-    """
-        Perform train-test split with respect to time series structure
-    """
-
-    # get the index after which test set starts
-
     if test_size > 1:
         test_index = int(test_size)
         X_train = X.iloc[:test_index]
@@ -158,14 +150,12 @@ def timeseries_train_test_split(X, y, test_size):
         X_test = X.iloc[test_index:]
         y_test = y.iloc[test_index:]
         return X_train, X_test, y_train, y_test
-        
     if test_size == 1:
         test_index = int(len(X))
         X_train = X.iloc[:test_index]
         y_train = y.iloc[:test_index]
         X_test = X.iloc[:test_index]
         y_test = y.iloc[:test_index]
-
         return X_train, X_test, y_train, y_test
     else:
         test_index = int(len(X) * (1 - test_size))
@@ -173,7 +163,6 @@ def timeseries_train_test_split(X, y, test_size):
         y_train = y.iloc[:test_index]
         X_test = X.iloc[test_index:]
         y_test = y.iloc[test_index:]
-
         return X_train, X_test, y_train, y_test
 
 
@@ -535,12 +524,6 @@ def learning_curves(estimator, data, target, train_sizes, cv, stringg):
 
 List_Train_Size = np.arange(0.01,1.0,0.01)
 
-
-
-
-
-
-
 # df_new = df_new[df_new['CO(GT)'] > 0.4]
 # df_new = df_new[df_new['CO(GT)'] < 5.0]
 
@@ -593,7 +576,7 @@ for count, low_lim in enumerate(List_Rejection):
     y_reject = data_reject.dropna()[feat_target]
     X_reject = data_reject.dropna().drop([feat_target], axis=1)
 
-    X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 1000)
+    X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 2000)
 
     # X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=T_size)
     # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 1000)
@@ -921,15 +904,12 @@ for count, low_lim in enumerate(List_Rejection):
     X_train_scaled.set_axis(list_X, axis = 'columns', inplace=True)
     X_test_scaled.set_axis(list_X, axis = 'columns', inplace=True)
 
-
     hour_train_scaled = X_train_scaled.dropna()['hour']
     hour_test_scaled = X_test_scaled.dropna()['hour']
     X_train_scaled = X_train_scaled.dropna().drop(['hour'], axis=1)
     X_test_scaled = X_test_scaled.dropna().drop(['hour'], axis=1)
  
-
     poly = PolynomialFeatures(degree=Degree)
-
 
     X_train_scaled_poly = pd.DataFrame(poly.fit_transform(X_train_scaled))
     X_test_scaled_poly = pd.DataFrame(poly.fit_transform(X_test_scaled))
