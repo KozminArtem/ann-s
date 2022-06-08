@@ -579,7 +579,7 @@ for count, low_lim in enumerate(List_Rejection):
     X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 2000)
 
     # X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=T_size)
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 1000)
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 2000)
 
 
     time_train = X_train.dropna()['datetime']
@@ -751,9 +751,9 @@ for count, low_lim in enumerate(List_Rejection):
     y = data.dropna()[feat_target]
     X = data.dropna().drop([feat_target], axis=1)
 
-    X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 1000)
+    X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 2000)
     # X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=T_size)
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 1000)
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 2000)
     
     X_train[feat_target] = y_train
 
@@ -875,9 +875,9 @@ for count, low_lim in enumerate(List_Rejection):
     y = data.dropna()[feat_target]
     X = data.dropna().drop([feat_target], axis=1)
 
-    X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 1000)
+    X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 2000)
     # X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=T_size)
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 1000)
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 2000)
     
     X_train[feat_target] = y_train
 
@@ -1045,10 +1045,10 @@ plt.grid(True)
 #     y_reject = data_reject.dropna()[feat_target]
 #     X_reject = data_reject.dropna().drop([feat_target], axis=1)
 
-#     X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 1000)
+#     X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size = 2000)
 
 #     # X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=T_size)
-#     # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 1000)
+#     # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 2000)
 
 
 #     time_train = X_train.dropna()['datetime']
