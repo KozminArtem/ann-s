@@ -721,7 +721,7 @@ keras.backend.clear_session()
 
 print(X_train_scaled_poly)
 
-List_reg = [-2.5, -2.0, -1.5, -1.25, -1.0, -0.75, -0.5] 
+List_reg = [-4.0, -3.5, -3.0, -2.5, -2.0, -1.5, -1.25, -1.0, -0.75, -0.5] 
 
 List_MSE_Train_Min = np.array([np.NaN] * len(List_reg)) 
 List_MSE_Train_Max = np.array([np.NaN] * len(List_reg)) 
@@ -741,7 +741,7 @@ List_MAPE_Test_Mean = np.array([np.NaN] * len(List_reg))
 List_MSE_Test_Std = np.array([np.NaN] * len(List_reg)) 
 List_MAPE_Test_Std = np.array([np.NaN] * len(List_reg)) 
 
-Number_measure = 100
+Number_measure = 10
 MSE_Train = np.array([np.NaN] * Number_measure)
 MAPE_Train = np.array([np.NaN] * Number_measure)
 MSE_Test = np.array([np.NaN] * Number_measure)
@@ -763,7 +763,7 @@ for count, reg in enumerate(List_reg):
         network.add(layers.Dense(units = 10, activation = activ_func, input_shape=(l_feat,)))
         network.add(layers.Dense(units=1, activation = 'linear'))
         network.compile(loss=loss_func, optimizer= keras.optimizers.Adam(0.005, decay = 0.005), metrics=['mean_squared_error']) 
-        history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 200,batch_size = 50, validation_split = 0.1)
+        history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 1000,batch_size = 50, validation_split = 0.1)
         if iteration == Number_measure - 1:
             plot_loss(history, string_l = "NN Adam MAE", draw_val = True)
         MSE_Train[iteration] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
@@ -834,7 +834,7 @@ for count, reg in enumerate(List_reg):
         network.add(layers.Dense(units = 10, activation = activ_func, input_shape=(l_feat,), kernel_regularizer=regularizers.L1(10**reg)))
         network.add(layers.Dense(units=1, activation = 'linear'))
         network.compile(loss=loss_func, optimizer= keras.optimizers.Adam(0.005, decay = 0.005), metrics=['mean_squared_error']) 
-        history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 200,batch_size = 50, validation_split = 0.1)
+        history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 1000,batch_size = 50, validation_split = 0.1)
         if iteration == Number_measure - 1:
             plot_loss(history, string_l = "NN Adam MAE", draw_val = True)
         MSE_Train[iteration] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
@@ -1153,37 +1153,46 @@ axis[1].legend(loc="best")
 
 figure, axis = plt.subplots(1,2)
 axis[0].fill_between(List_reg, List_MSE_non_Min,List_MSE_non_Max,
-                facecolor='red',
+                facecolor='tomato',
                 alpha = 0.5,
-                color = 'red',    #  цвет линий
+                color = 'tomato',    #  цвет линий
                 linewidth = 2,      #  ширина линий
                 linestyle = '--',
-                label = "MSE Non Reg")   #  начертание линий
+                label = "Non Reg")   #  начертание линий
 axis[0].fill_between(List_reg, List_MSE_L1_Min,List_MSE_L1_Max,
-                facecolor='green',
+                facecolor='lime',
                 alpha = 0.5,
-                color = 'green',    #  цвет линий
+                color = 'lime',    #  цвет линий
                 linewidth = 2,      #  ширина линий
                 linestyle = '--',
-                label = "MSE L1 Reg")   #  начертание линий
+                label = "L1 Reg")   #  начертание линий
+
+axis[0].plot(List_reg, List_MSE_non_Mean, label="Non Reg Mean", linewidth=2.0, color = "red")
+axis[0].plot(List_reg, List_MSE_L1_Mean, label="L1 Reg Mean", linewidth=2.0, color = "green")
+
+
 
 axis[0].set_title("MSE, Hidden_Tanh 10")
 axis[0].legend(loc="best")
 
 axis[1].fill_between(List_reg, List_MAPE_non_Min,List_MAPE_non_Max,
-                facecolor='red',
+                facecolor='tomato',
                 alpha = 0.5,
-                color = 'red',    #  цвет линий
+                color = 'tomato',    #  цвет линий
                 linewidth = 2,      #  ширина линий
                 linestyle = '--',
-                label = "MAPE Non Reg")   #  начертание линий
+                label = "Non Reg")   #  начертание линий
 axis[1].fill_between(List_reg, List_MAPE_L1_Min,List_MAPE_L1_Max,
-                facecolor='green',
+                facecolor='lime',
                 alpha = 0.5,
-                color = 'green',    #  цвет линий
+                color = 'lime',    #  цвет линий
                 linewidth = 2,      #  ширина линий
                 linestyle = '--',
-                label = "MAPE L1 Reg")   #  начертание линий
+                label = "L1 Reg")   #  начертание линий
+
+axis[1].plot(List_reg, List_MAPE_non_Mean, label="Non Reg Mean", linewidth=2.0, color = "red")
+axis[1].plot(List_reg, List_MAPE_L1_Mean, label="L1 Reg Mean", linewidth=2.0, color = "green")
+
 
 axis[1].set_title("MAPE, Hidden_Tanh 10")
 axis[1].legend(loc="best")
