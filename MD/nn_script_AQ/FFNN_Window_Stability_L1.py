@@ -469,7 +469,8 @@ def learning_curves(estimator, data, target, train_sizes, cv, stringg):
     # plt.savefig('fig_LinPol/MAPELearnCurv' + str(stringg) +'.png')
     
 
-def PolyScaledData(data_df = df_new, target_name = feat_target, pol_deg = Degree, TimeSplit = True, Test_size = T_size, add_hour = False, add_CO_hour = False, list_drop = list_delete, add_window = False, size_window = 24):
+def PolyScaledData(data_df = df_new, target_name = feat_target, pol_deg = Degree, TimeSplit = True, Test_size = T_size, add_hour = False, \
+                    add_CO_hour = False, list_drop = list_delete, add_window = False, size_window = 24, drop_bias = False):
     if add_hour:
         data["hour"] = data_df['datetime'].dt.hour
     if add_CO_hour:
@@ -581,9 +582,9 @@ def PolyScaledData(data_df = df_new, target_name = feat_target, pol_deg = Degree
 
         X_train_scaled_poly, X_test_scaled_poly, y_train, y_test = timeseries_train_test_split(X_all_scaled_poly, y_all, test_size=Test_size)
 
-    # X_train_scaled_poly = X_train_scaled_poly.dropna().drop(['1'], axis=1)
-    # X_test_scaled_poly = X_test_scaled_poly.dropna().drop(['1'], axis=1)
-
+    if drop_bias:
+        X_train_scaled_poly = X_train_scaled_poly.dropna().drop(['1'], axis=1)
+        X_test_scaled_poly = X_test_scaled_poly.dropna().drop(['1'], axis=1)
     return X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test
 
 
