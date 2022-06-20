@@ -50,7 +50,13 @@ for feat in features:
 # feat_CO = ['PT08.S1(CO)','T', 'RH', 'PT08.S2(NMHC)', 'PT08.S3(NOx)', 'PT08.S4(NO2)', 'PT08.S5(O3)', 'CO(GT)']
 # feat_CO = ['PT08.S1(CO)', 'PT08.S2(NMHC)', 'T','PT08.S5(O3)', 'CO(GT)']
 feat_CO = ['PT08.S1(CO)', 'PT08.S2(NMHC)', 'T' , 'CO(GT)']
+
+# feat_CO = ['PT08.S1(CO)', 'PT08.S2(NMHC)', 'CO(GT)']
+
+# feat_CO = ['PT08.S1(CO)', 'CO(GT)']
 # feat_CO = ['PT08.S2(NMHC)', 'T' , 'CO(GT)']
+# feat_CO = ['PT08.S2(NMHC)', 'CO(GT)']
+
 # feat_CO = ['PT08.S1(CO)','T','RH', 'CO(GT)']
 # feat_CO = ['PT08.S1(CO)','T', 'CO(GT)']
 # feat_CO = ['PT08.S1(CO)', 'CO(GT)']
@@ -61,7 +67,7 @@ Degree = 2
 # list_delete = ['T^2','PT08.S2(NMHC)^2']
 
 # list_delete = ['T^2','R_CO^2','R_NM^2']
-list_delete = ['T^2', 'R_NM^2']
+list_delete = ['R_NM^2']
 
 T_size = 2000
 
@@ -90,7 +96,18 @@ def mean_absolute_percentage_error(y_true, y_pred):
 def mean_s_error(y_true, y_pred):
     return np.mean((y_true - y_pred)**2)
 # for time-series cross-validation set 5 folds
-tscv = TimeSeriesSplit(n_splits=5)
+tscv = TimeSeriesSplit(n_splits=10)
+
+def gate_rate_error(y_true,y_pred):
+    gre = 0.0
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+    len_y_true = len(y_true)
+    for j in range(len_y_true):
+        if abs(y_true[j] - y_pred[j]) > 0.25 * abs(y_true[j]):
+            gre = gre + 1
+
+    return (gre/len_y_true)*100     
 
 def timeseries_train_test_split(X, y, test_size):
     if test_size > 1:
@@ -149,7 +166,8 @@ def plotModelResults(
             plt.plot(time_test, anomalies, "o", markersize=10, label="Anomalies")
     error = mean_absolute_percentage_error(y_test, prediction)
     error_mse = mean_s_error(y_test, prediction)
-    plt.title("MAPE: {0:.2f}% ".format(error) + "MSE: {0:.2f} ".format(error_mse) + str(string))
+    error_gre = gate_rate_error(y_test, prediction)
+    plt.title("MAPE: {0:.2f}% ".format(error) + "MSE: {0:.2f} ".format(error_mse) + "GRE: {0:.2f}%".format(error_gre) + str(string))
     plt.legend(loc="best")
     plt.tight_layout()
     plt.grid(True)
@@ -239,6 +257,11 @@ print(X_train_poly_scaled.columns)
 # print(X_train_poly_scaled.head(5))
 # print(X_test_poly_scaled.head(5))
 
+
+print(X_train_poly_scaled)
+print(X_test_poly_scaled)
+
+
 lr = LinearRegression()
 lr.fit(X_train_poly_scaled, y_train)
 plotModelResults(lr, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "Polynomial, Deg = " + str(Degree),  plot_intervals=True)
@@ -250,13 +273,13 @@ from sklearn.linear_model import LassoCV, RidgeCV
 
                                                      # Pol Ridge Scaled 
 
-ridge = RidgeCV(cv=tscv)
-ridge.fit(X_train_poly_scaled, y_train)
-plotModelResults(ridge, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Ridge, Deg =" + str(Degree), plot_anomalies=True)
-plotCoefficients(ridge, X_train = X_train_poly_scaled)
+# ridge = RidgeCV(cv=tscv)
+# ridge.fit(X_train_poly_scaled, y_train)
+# plotModelResults(ridge, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Ridge, Deg =" + str(Degree), plot_anomalies=True)
+# plotCoefficients(ridge, X_train = X_train_poly_scaled)
 
-                                                     # Pol LASSO Scaled 
-lasso = LassoCV(cv=tscv)
+#                                                      # Pol LASSO Scaled 
+lasso = LassoCV(alphas = [0.00001, 0.00003, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3,10, 30, 100], cv=tscv)
 lasso.fit(X_train_poly_scaled, y_train)
 plotModelResults(lasso, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Lasso, Deg =" + str(Degree))
 plotCoefficients(lasso, X_train = X_train_poly_scaled, stringg = "Coefficients Lasso")
@@ -307,10 +330,10 @@ X_train_poly_scaled['hour'] = X_train_scaled['hour']
 X_test_poly_scaled['hour'] = X_test_scaled['hour']
 # X_test_poly_scaled['weekday'] = X_test_scaled['weekday']
 
-lr = LinearRegression()
-lr.fit(X_train_poly_scaled, y_train)
-plotModelResults(lr, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "Polynomial + hour, Deg = " + str(Degree),  plot_intervals=True)
-plotCoefficients(lr, X_train=X_train_poly_scaled)
+# lr = LinearRegression()
+# lr.fit(X_train_poly_scaled, y_train)
+# plotModelResults(lr, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "Polynomial + hour, Deg = " + str(Degree),  plot_intervals=True)
+# plotCoefficients(lr, X_train=X_train_poly_scaled)
         
 #                                                             # LASSO, RIDGE
 
@@ -326,10 +349,10 @@ from sklearn.linear_model import LassoCV, RidgeCV
 
                                                      # Pol Ridge Scaled with hour and weekday
 
-ridge = RidgeCV(cv=tscv)
-ridge.fit(X_train_poly_scaled, y_train)
-plotModelResults(ridge, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial + hour, Ridge, Deg =" + str(Degree), plot_anomalies=True)
-plotCoefficients(ridge, X_train = X_train_poly_scaled)
+# ridge = RidgeCV(cv=tscv)
+# ridge.fit(X_train_poly_scaled, y_train)
+# plotModelResults(ridge, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial + hour, Ridge, Deg =" + str(Degree), plot_anomalies=True)
+# plotCoefficients(ridge, X_train = X_train_poly_scaled)
 
                                                      # Lin LASSO Scaled with hour and weekday
 
@@ -343,10 +366,10 @@ plotCoefficients(ridge, X_train = X_train_poly_scaled)
                                                      # Pol LASSO Scaled with hour and weekday
 
 
-lasso = LassoCV(cv=tscv)
-lasso.fit(X_train_poly_scaled, y_train)
-plotModelResults(lasso, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial + hour, Lasso, Deg =" + str(Degree))
-plotCoefficients(lasso, X_train = X_train_poly_scaled, stringg = "Coefficients Lasso")
+# lasso = LassoCV(cv=tscv)
+# lasso.fit(X_train_poly_scaled, y_train)
+# plotModelResults(lasso, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial + hour, Lasso, Deg =" + str(Degree))
+# plotCoefficients(lasso, X_train = X_train_poly_scaled, stringg = "Coefficients Lasso")
 
 
 #                                                                 # BOOSTING
@@ -454,8 +477,9 @@ xgb = XGBRegressor(verbosity=0)
 MeanCo_hour = np.array([np.NaN] * 24)
 ar_hour = range(24)
 for i in range(24):
-    MeanCo_hour[i] = data[data['hour'] == i]['CO(GT)'].quantile(0.25)
+    MeanCo_hour[i] = data[data['hour'] == i]['CO(GT)'].mean()
 
+print(MeanCo_hour)
 data["hour"] = df_new['datetime'].dt.hour
 data["CO_Q1"] = MeanCo_hour[data["hour"]]
 # data["weekday"] = df_new['datetime'].dt.weekday
@@ -503,26 +527,28 @@ X_train_poly_scaled['CO_Q1'] = COmean_train_scaled
 X_test_poly_scaled['CO_Q1'] = COmean_test_scaled
 
 
+print(X_train_poly_scaled)
+print(X_test_poly_scaled)
+
+
 lr = LinearRegression()
 lr.fit(X_train_poly_scaled, y_train)
 plotModelResults(lr, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "Polynomial, Deg = " + str(Degree),  plot_intervals=True)
 plotCoefficients(lr, X_train=X_train_poly_scaled)
 
 
-                                                     # Pol Ridge Scaled 
+#                                                      # Pol Ridge Scaled 
 
-ridge = RidgeCV(cv=tscv)
-ridge.fit(X_train_poly_scaled, y_train)
-plotModelResults(ridge, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Q1_CO(hour), Ridge, Deg =" + str(Degree), plot_anomalies=True)
-plotCoefficients(ridge, X_train = X_train_poly_scaled)
+# ridge = RidgeCV(cv=tscv)
+# ridge.fit(X_train_poly_scaled, y_train)
+# plotModelResults(ridge, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Q1_CO(hour), Ridge, Deg =" + str(Degree), plot_anomalies=True)
+# plotCoefficients(ridge, X_train = X_train_poly_scaled)
 
-                                                     # Pol LASSO Scaled 
-lasso = LassoCV(cv=tscv)
+#                                                      # Pol LASSO Scaled 
+lasso = LassoCV(alphas = [0.00001, 0.00003, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30, 100], cv=tscv)
 lasso.fit(X_train_poly_scaled, y_train)
 plotModelResults(lasso, X_train = X_train_poly_scaled, X_test=X_test_poly_scaled, plot_intervals=True, string ="Polynomial, Lasso, Deg =" + str(Degree))
 plotCoefficients(lasso, X_train = X_train_poly_scaled, stringg = "Coefficients Lasso")
-
-
 
 
 
