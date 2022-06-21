@@ -81,10 +81,33 @@ print("dataframe new")
 
 data = pd.DataFrame(df_new[['datetime'] + feat_CO].copy())
 # print(data.tail(7))
+# print("AAAAAAAAA")
+# print(data)
+
+# print(data.iloc[:500].describe())
+
+# print(data.iloc[500:1000].describe())
+
+
+# g = sns.pairplot(data.iloc[1000:1500], kind = 'scatter')  
+# g.map_lower(sns.kdeplot, levels=4, color=".2")
+
+# print(data.iloc[1000:1500].describe())
+
+
+# print(data.iloc[1500:2000].describe())
+
+
+# g1 = sns.pairplot(data.iloc[1500:2000], kind = 'scatter')  
+# g1.map_lower(sns.kdeplot, levels=4, color=".2")
+
+
+# print(data.iloc[:2304])
+
+# print(data.iloc[2304:])
+
 y = data.dropna()[feat_target]
 X = data.dropna().drop([feat_target], axis=1)
-
-
 
 
 
@@ -114,6 +137,18 @@ def gate_rate_error(y_true,y_pred):
     return (gre/len_y_true)*100    
 
 
+def arr_gate_rate_error(y_true,y_pred):
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+    len_y_true = len(y_true)
+    array_gre = np.array([np.NaN] * len_y_true)
+
+    for j in range(len_y_true):
+        if abs(y_true[j] - y_pred[j]) > 0.25 * abs(y_true[j]):
+            array_gre[j] = 1.0
+        else: 
+            array_gre[j] = 0.0   
+    return array_gre        
 
 
 # for time-series cross-validation set 5 folds
@@ -151,7 +186,8 @@ time_train = pd.DataFrame()
 time_test = pd.DataFrame()
 temp_str = " "
 def plotModelResults(
-    model, X_train=X_train, X_test=X_test,string = temp_str, plot_intervals=False, plot_anomalies=False, time_test = time_test, time_train = time_train, y_test = y_test, y_train = y_train
+    model, X_train=X_train, X_test=X_test,string = temp_str, plot_intervals=False, plot_anomalies=False,\
+    plot_diff = False, time_test = time_test, time_train = time_train, y_test = y_test, y_train = y_train
 ):
     prediction = model.predict(X_test)
     plt.figure(figsize=(15, 7))
@@ -175,11 +211,227 @@ def plotModelResults(
             plt.plot(time_test, anomalies, "o", markersize=10, linestyle = 'None',label="Anomalies")
     error_mape = mean_absolute_percentage_error(y_test, prediction)
     error_mse = mean_s_error(y_test, prediction)
+    print("MSE",error_mse)
     error_gre = gate_rate_error(y_test, prediction)
     plt.title("MAPE: {0:.2f}% ".format(error_mape) + "MSE: {0:.2f} ".format(error_mse) + "GRE: {0:.2f}%".format(error_gre) + str(string))
     plt.legend(loc="best")
     plt.tight_layout()
     plt.grid(True)
+    
+
+    error_mape = mean_absolute_percentage_error(y_test.values,prediction)
+
+    array_diff = abs(y_test.values - prediction)
+    array_mse  = (y_test.values - prediction)**2
+    # print(type(array_mse), len(array_mse))
+    array_mape = (array_diff/y_test.values) * 100
+    array_gre  = arr_gate_rate_error(y_test.values,prediction)
+
+    # print(array_mse.mean())
+    # print(array_mse.max())
+    # print(array_mse.min())
+    # print(np.sort(array_mse))
+
+    error_mse = mean_s_error(y_test.values,prediction)
+    print("MSE VALUES",error_mse)
+    error_gre = gate_rate_error(y_test.values,prediction)
+
+    
+
+
+    temp = pd.DataFrame()
+    temp['CO_true'] = y_test.values
+    temp['MSE']  = array_mse
+    temp['MAPE'] = array_mape
+    temp['GRE']  = array_gre
+    temp['T']    = X_test['T']
+    temp['R_CO'] = X_test['R_CO']
+    temp['R_NM'] = X_test['R_NM']
+    temp['Pred'] = prediction
+    # temp['hour'] = X_test['hour']
+    # temp['COmean'] = X_test['COmean']
+    print(len(time_test.dt.month))
+    print(len(prediction))
+    print(type(time_test.dt.month))
+    print(type(prediction))
+
+
+    temp['Month'] = np.array(time_test.dt.month)
+    print(temp['Month'])
+    print(temp['GRE'].mean())
+
+
+    if plot_diff:
+        # plt.figure(figsize=(15, 7))
+        # plt.plot(time_test, array_diff, label="dif", marker = 'o',markersize=3, linestyle = 'None', color = "green")
+        # plt.title("Diff Mean: {0:.2f} ".format(array_diff.mean()) + "Min: {0:.2f} ".format(array_diff.min()) + "Max: {0:.2f} ".format(array_diff.max()) + str(string))
+        # plt.legend(loc="best")
+        # plt.tight_layout()
+        # plt.grid(True)
+        
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(np.linspace(0, 10),np.linspace(0, 10)) 
+
+        plt.plot(y_test.values, prediction, label="Pred(True)",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.plot(np.linspace(0, 10),1.25*np.linspace(0, 10), color = "red")
+        plt.plot(np.linspace(0, 10),0.75*np.linspace(0, 10), color = "red")
+
+        plt.title("Pred(True)" + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+        # plt.savefig('fig_LinPol/Pred(True)' + str(string) +'.png')
+
+
+
+        # plt.figure(figsize = (16,10))
+        # sns.boxplot(x = 'CO_true', y = 'Pred', data = temp)
+        # plt.plot(np.linspace(0, 10),np.linspace(0, 10))
+
+
+
+
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(time_test, array_mse, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("MSE Mean: {0:.2f} ".format(array_mse.mean()) + "Min: {0:.2f} ".format(array_mse.min()) + "Max: {0:.2f} ".format(array_mse.max()) + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(y_test.values, array_mse, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("Mse(y_true)" + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        plt.figure(figsize = (16,10))
+        sns.boxplot(x = 'CO_true', y = 'MSE', data = temp)
+        # plt.savefig('fig_LinPol/Box_MSE' + str(string) +'.png')
+
+
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(temp['T'], array_mse, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("Mse(T)" + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(temp['R_CO'], array_mse, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("Mse(R_CO)" + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(temp['R_NM'], array_mse, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("Mse(R_NM)" + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        plt.figure(figsize = (16,10))
+        sns.boxplot(x = 'Month', y = 'MSE', data = temp)
+
+
+
+
+
+
+
+
+
+
+
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(time_test, array_mape, label="MAPE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("MAPE Mean: {0:.2f} ".format(array_mape.mean()) + "Min: {0:.2f} ".format(array_mape.min()) + "Max: {0:.2f} ".format(array_mape.max()) + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(y_test.values, array_mape, label="MAPE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("Mape(y_true)" + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        plt.figure(figsize = (16,10))
+        sns.boxplot(x = 'CO_true', y = 'MAPE', data = temp)
+        # plt.savefig('fig_LinPol/Box_MAPE' + str(string) +'.png')
+
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(temp['T'], array_mape, label="MAPE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("MAPE(T)" + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(temp['R_CO'], array_mape, label="MAPE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("MAPE(R_CO)" + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(temp['R_NM'], array_mape, label="MAPE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("MAPE(R_NM)" + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        plt.figure(figsize = (16,10))
+        sns.boxplot(x = 'Month', y = 'MAPE', data = temp)
+
+
+
+
+        # plt.figure(figsize=(15, 7))
+        # plt.plot(temp['hour'], array_mape, label="MSE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        # plt.title("MAPE(hour)" + str(string))
+        # plt.legend(loc="best")
+        # plt.tight_layout()
+        # plt.grid(True)
+
+        # plt.figure(figsize = (16,10))
+        # sns.boxplot(x = 'COmean', y = 'MAPE', data = temp)
+
+
+
+
+
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(time_test, array_gre, label="GRE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("GRE(time_test)" + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        plt.figure(figsize=(15, 7))
+        plt.plot(y_test.values, array_gre, label="GRE",  marker = 'o',markersize=3, linestyle = 'None', color = "black")
+        plt.title("GRE(y_true)" + str(string))
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.grid(True)
+
+        # plt.figure(figsize = (16,10))
+        # sns.boxplot(x = 'Month', y = 'GRE', data = temp)
+
+
+        plt.figure(figsize = (16,10))
+        for mon in range(1,13):
+            plt.plot(mon, temp[temp['Month'] == mon]['GRE'].mean())
+
+
 
 def plotCoefficients(model, X_train = X_train):
     coefs = pd.DataFrame(model.coef_, X_train.columns)
@@ -860,6 +1112,38 @@ plt.legend(loc="best")
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # for count, temp_size in enumerate(List_Train):
 #     # print(count,temp_size/24, temp_size)
 #     x_aa, X_Train_temp, x_yy, y_train_temp = timeseries_train_test_split(X_train_poly_scaled, y_train, test_size = All_Test_size - temp_size*24)
@@ -985,28 +1269,6 @@ axis[1].legend(loc="best")
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 figure, axis = plt.subplots(1,2)
 
 axis[0].plot(List_Train, MSE_Test_non, label="Test Non Reg", linewidth=2.0, color = "green")
@@ -1071,6 +1333,126 @@ axis[1].plot(List_Train, GRE_Test_L1_drop, label="Test L1 Reg drop", linewidth=2
 
 axis[1].set_title("GRE, Learning curve")
 axis[1].legend(loc="best")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tscv = TimeSeriesSplit(n_splits = 10)
+
+
+
+X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=2000)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 2000)
+
+
+
+time_train = X_train.dropna()['datetime']
+time_test = X_test.dropna()['datetime']
+X_train = X_train.dropna().drop(['datetime'], axis=1)
+X_test = X_test.dropna().drop(['datetime'], axis=1)
+
+
+
+
+X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train))
+X_test_scaled = pd.DataFrame(scaler.transform(X_test))
+list_X = X_test.columns.values.tolist()
+X_train_scaled.set_axis(list_X, axis = 'columns', inplace=True)
+X_test_scaled.set_axis(list_X, axis = 'columns', inplace=True)
+
+hour_train_scaled = X_train_scaled.dropna()['hour']
+hour_test_scaled = X_test_scaled.dropna()['hour']
+X_train_scaled = X_train_scaled.dropna().drop(['hour'], axis=1)
+X_test_scaled = X_test_scaled.dropna().drop(['hour'], axis=1)
+
+COmean_train_scaled = X_train_scaled.dropna()['CO_Q1']
+COmean_test_scaled = X_test_scaled.dropna()['CO_Q1']
+X_train_scaled = X_train_scaled.dropna().drop(['CO_Q1'], axis=1)
+X_test_scaled = X_test_scaled.dropna().drop(['CO_Q1'], axis=1)
+
+poly = PolynomialFeatures(degree=Degree)
+
+X_train_poly_scaled = pd.DataFrame(poly.fit_transform(X_train_scaled))
+X_test_poly_scaled = pd.DataFrame(poly.fit_transform(X_test_scaled))
+list_poly_scaled =list(poly.get_feature_names_out())
+X_train_poly_scaled.set_axis(list_poly_scaled, axis = 'columns', inplace=True)
+X_test_poly_scaled.set_axis(list_poly_scaled, axis = 'columns', inplace=True)
+X_train_poly_scaled = X_train_poly_scaled.dropna().drop(list_delete, axis=1)
+X_test_poly_scaled  = X_test_poly_scaled.dropna().drop(list_delete, axis=1)
+
+# X_train_poly_scaled['hour'] = hour_train_scaled
+# X_test_poly_scaled['hour'] = hour_test_scaled
+
+X_train_poly_scaled['CO_Q1'] = COmean_train_scaled 
+X_test_poly_scaled['CO_Q1'] = COmean_test_scaled
+
+
+print(X_train_poly_scaled)
+print(X_test_poly_scaled)
+
+
+lr = LinearRegression()
+lr.fit(X_train_poly_scaled, y_train)
+
+
+plotModelResults(lr, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "non Reg",  plot_intervals=True,\
+                 plot_diff = True, y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
+plotCoefficients(lr, X_train=X_train_poly_scaled)
+
+
+
+lasso = LassoCV(alphas = [0.00001, 0.00003, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000], cv=tscv)
+lasso.fit(X_train_poly_scaled, y_train)
+
+
+plotModelResults(lasso, X_train=X_train_poly_scaled, X_test=X_test_poly_scaled, string = "lasso",  plot_intervals=True,\
+                 plot_diff = True, y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
+plotCoefficients(lasso, X_train=X_train_poly_scaled)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
