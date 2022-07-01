@@ -611,20 +611,20 @@ Type_error = 'mean_squared_error'
 Type_optimizer='RMSprop'
 Number_epochs = 100
 
-x = np.linspace(-1, 1)
-plt.figure(figsize = (16,10))
-plt.plot(x, keras.activations.linear(x),label="linear", color = 'red') 
-plt.plot(x, keras.activations.elu(x),label="elu", color = 'chocolate') 
-plt.plot(x, keras.activations.relu(x),label="relu", color = 'orange') 
-plt.plot(x, keras.activations.selu(x),label="selu", color = 'gold') 
-plt.plot(x, keras.activations.sigmoid(x),label="sigmoid", color = 'green') 
-plt.plot(x, keras.activations.tanh(x),label="tanh", color = 'dodgerblue') 
-plt.plot(x, keras.activations.exponential(x),label="exponential", color = 'indigo')  
+# x = np.linspace(-1, 1)
+# plt.figure(figsize = (16,10))
+# plt.plot(x, keras.activations.linear(x),label="linear", color = 'red') 
+# plt.plot(x, keras.activations.elu(x),label="elu", color = 'chocolate') 
+# plt.plot(x, keras.activations.relu(x),label="relu", color = 'orange') 
+# plt.plot(x, keras.activations.selu(x),label="selu", color = 'gold') 
+# plt.plot(x, keras.activations.sigmoid(x),label="sigmoid", color = 'green') 
+# plt.plot(x, keras.activations.tanh(x),label="tanh", color = 'dodgerblue') 
+# plt.plot(x, keras.activations.exponential(x),label="exponential", color = 'indigo')  
 
-plt.title("Activations Function")
-plt.legend(loc="best")
-plt.tight_layout()
-plt.grid(True)
+# plt.title("Activations Function")
+# plt.legend(loc="best")
+# plt.tight_layout()
+# plt.grid(True)
 
 
 
@@ -680,11 +680,24 @@ def plot_loss(history, string_l = 'Loss', draw_val = False):
 
 
 
+# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(drop_bias = True)
 
-X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True, add_window = True)
+# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True, drop_bias = True)
+
+# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_window = True, drop_bias = True)
+
+X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True, add_window = True, drop_bias = True)
+
+
 # X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_hour = True, add_window = True)
 # X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_window = True)
 # X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True)
+
+
+X_train_scaled_poly = X_train_scaled_poly.iloc[23:]
+y_train = y_train.iloc[23:]
+time_train = time_train.iloc[23:]
+
 
 X_all_scaled_poly = X_train_scaled_poly.append(X_test_scaled_poly, ignore_index=True) 
 y_all = y_train.append(y_test, ignore_index=True)
@@ -693,34 +706,26 @@ time_all = time_train.append(time_test, ignore_index = True)
 
 
 
-network = models.Sequential()
-l_feat = X_train_scaled_poly.shape[1]
-network.add(layers.Dense(units = 1, activation = 'linear', input_shape=(l_feat,)))
-network.compile(loss='mean_squared_error', optimizer= keras.optimizers.Adam(0.0001), metrics=['mean_squared_error']) 
-history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 500, validation_split = 0)
+# network = models.Sequential()
+# l_feat = X_train_scaled_poly.shape[1]
+# network.add(layers.Dense(units = 1, activation = 'linear', input_shape=(l_feat,)))
+# network.compile(loss='mean_squared_error', optimizer= keras.optimizers.Adam(0.0001), metrics=['mean_squared_error']) 
+# history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 500, validation_split = 0)
 
-def plot_loss(history, string_l = 'Loss', draw_val = False):
-    plt.figure(figsize = (16,10))
-    plt.plot(history.history['loss'], label='loss')
-    if draw_val:
-        plt.plot(history.history['val_loss'], label='val_loss')
-    plt.title(string_l)
-    plt.ylim([0, 10])
-    plt.xlabel('Epoch')
-    plt.ylabel('Error [MSE]')   
-    plt.legend()
-    plt.grid(True)
-
-# plot_loss(history, string_l = "NN(ML) Adam 0.001")
-plotModelResults(network, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "NN(ML) Adam 0.001,  Window = 1 day",  plot_intervals=True,\
-                 y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test, plot_diff = False)
-keras.backend.clear_session()
+# # plot_loss(history, string_l = "NN(ML) Adam 0.001")
+# plotModelResults(network, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "NN(ML) Adam 0.001,  Window = 1 day",  plot_intervals=True,\
+#                  y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test, plot_diff = False)
+# keras.backend.clear_session()
 
 
                                                                 # MAE
 
 
+print("TRAIN TRAIN")
 print(X_train_scaled_poly)
+
+print("TEST TEST")
+print(X_test_scaled_poly)
 
 List_reg = [-4.0, -3.5, -3.0, -2.5, -2.0, -1.5, -1.25, -1.0, -0.75, -0.5] 
 
@@ -730,7 +735,9 @@ List_MSE_Train_Mean = np.array([np.NaN] * len(List_reg))
 List_MAPE_Train_Min = np.array([np.NaN] * len(List_reg)) 
 List_MAPE_Train_Max = np.array([np.NaN] * len(List_reg)) 
 List_MAPE_Train_Mean = np.array([np.NaN] * len(List_reg)) 
-
+List_GRE_Train_Min = np.array([np.NaN] * len(List_reg)) 
+List_GRE_Train_Max = np.array([np.NaN] * len(List_reg)) 
+List_GRE_Train_Mean = np.array([np.NaN] * len(List_reg)) 
 
 List_MSE_Test_Min = np.array([np.NaN] * len(List_reg)) 
 List_MSE_Test_Max = np.array([np.NaN] * len(List_reg)) 
@@ -738,15 +745,26 @@ List_MSE_Test_Mean = np.array([np.NaN] * len(List_reg))
 List_MAPE_Test_Min = np.array([np.NaN] * len(List_reg)) 
 List_MAPE_Test_Max = np.array([np.NaN] * len(List_reg)) 
 List_MAPE_Test_Mean = np.array([np.NaN] * len(List_reg)) 
+List_GRE_Test_Min = np.array([np.NaN] * len(List_reg)) 
+List_GRE_Test_Max = np.array([np.NaN] * len(List_reg)) 
+List_GRE_Test_Mean = np.array([np.NaN] * len(List_reg)) 
+
 
 List_MSE_Test_Std = np.array([np.NaN] * len(List_reg)) 
 List_MAPE_Test_Std = np.array([np.NaN] * len(List_reg)) 
+List_GRE_Test_Std = np.array([np.NaN] * len(List_reg)) 
 
-Number_measure = 10
+
+Number_measure = 20
 MSE_Train = np.array([np.NaN] * Number_measure)
 MAPE_Train = np.array([np.NaN] * Number_measure)
+GRE_Train = np.array([np.NaN] * Number_measure)
+
+
 MSE_Test = np.array([np.NaN] * Number_measure)
 MAPE_Test = np.array([np.NaN] * Number_measure)
+GRE_Test = np.array([np.NaN] * Number_measure)
+
 
 
 
@@ -764,66 +782,99 @@ for count, reg in enumerate(List_reg):
         network.add(layers.Dense(units = 10, activation = activ_func, input_shape=(l_feat,)))
         network.add(layers.Dense(units=1, activation = 'linear'))
         network.compile(loss=loss_func, optimizer= keras.optimizers.Adam(0.005, decay = 0.005), metrics=['mean_squared_error']) 
-        history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 1000,batch_size = 50, validation_split = 0.1)
-        if iteration == Number_measure - 1:
-            plot_loss(history, string_l = "NN Adam MAE", draw_val = True)
+        history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 1000,batch_size = 50)
+        # if iteration == Number_measure - 1:
+        #     plot_loss(history, string_l = "NN Adam MAE", draw_val = True)
+        
         MSE_Train[iteration] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
         MAPE_Train[iteration] = mean_absolute_percentage_error(y_train,network.predict(X_train_scaled_poly).flatten())
+        GRE_Train[iteration] = gate_rate_error(y_train,network.predict(X_train_scaled_poly).flatten())    
+        
         MSE_Test[iteration] = mean_s_error(y_test,network.predict(X_test_scaled_poly).flatten())    
         MAPE_Test[iteration] = mean_absolute_percentage_error(y_test,network.predict(X_test_scaled_poly).flatten())
+        GRE_Test[iteration] = gate_rate_error(y_test,network.predict(X_test_scaled_poly).flatten())    
         keras.backend.clear_session()
+
     List_MSE_Train_Min[count] = MSE_Train.min() 
     List_MSE_Train_Max[count] = MSE_Train.max() 
     List_MSE_Train_Mean[count] = MSE_Train.mean() 
+   
     List_MAPE_Train_Min[count] = MAPE_Train.min() 
     List_MAPE_Train_Max[count] = MAPE_Train.max() 
     List_MAPE_Train_Mean[count] = MAPE_Train.mean() 
 
+    List_GRE_Train_Min[count] = GRE_Train.min() 
+    List_GRE_Train_Max[count] = GRE_Train.max() 
+    List_GRE_Train_Mean[count] = GRE_Train.mean() 
+
+
+
     List_MSE_Test_Min[count] = MSE_Test.min() 
     List_MSE_Test_Max[count] = MSE_Test.max() 
     List_MSE_Test_Mean[count] = MSE_Test.mean() 
+   
     List_MAPE_Test_Min[count] = MAPE_Test.min() 
     List_MAPE_Test_Max[count] = MAPE_Test.max()  
     List_MAPE_Test_Mean[count] = MAPE_Test.mean()  
-    
+   
+    List_GRE_Test_Min[count] = GRE_Test.min() 
+    List_GRE_Test_Max[count] = GRE_Test.max() 
+    List_GRE_Test_Mean[count] = GRE_Test.mean() 
+   
+
     List_MSE_Test_Std[count] = MSE_Test.std()
     List_MAPE_Test_Std[count] = MAPE_Test.std()
+    List_GRE_Test_Std[count] = GRE_Test.std()
+    
+    print("Non regul", count, reg)
 
-    print(count, reg, MAPE_Test.min(), MAPE_Test.mean())
-
-
-figure, axis = plt.subplots(1,2) 
-axis[0].plot(List_reg, List_MSE_Train_Min, label="Train_min", linewidth=1.0, color = "red")
-axis[0].plot(List_reg, List_MSE_Train_Max, label="Train_max", linewidth=1.0, color = "red")
-axis[0].plot(List_reg, List_MSE_Train_Mean, label="Train_mean", linewidth=2.0, color = "red")
-axis[0].plot(List_reg, List_MSE_Test_Min, label="Test_min", linewidth=1.0, color = "green")
-axis[0].plot(List_reg, List_MSE_Test_Max, label="Test_max", linewidth=1.0, color = "green")
-axis[0].plot(List_reg, List_MSE_Test_Mean, label="Test_mean", linewidth=2.0, color = "green")
-axis[0].set_title("MSE, Hidden_Tanh 10, non_regul")
-axis[0].legend(loc="best")
+    print(MSE_Test.mean(), MSE_Test.min(), MSE_Test.max(), MSE_Test.std())
+    print(MAPE_Test.mean(), MAPE_Test.min(), MAPE_Test.max(), MAPE_Test.std())
+    print(GRE_Test.mean(), GRE_Test.min(), GRE_Test.max(), GRE_Test.std())
 
 
 
-axis[1].plot(List_reg, List_MAPE_Train_Min, label="Train_min", linewidth=1.0, color = "red")
-axis[1].plot(List_reg, List_MAPE_Train_Max, label="Train_max", linewidth=1.0, color = "red")
-axis[1].plot(List_reg, List_MAPE_Train_Mean, label="Train_mean", linewidth=2.0, color = "red")
-axis[1].plot(List_reg, List_MAPE_Test_Min, label="Test_min", linewidth=1.0, color = "green")
-axis[1].plot(List_reg, List_MAPE_Test_Max, label="Test_max", linewidth=1.0, color = "green")
-axis[1].plot(List_reg, List_MAPE_Test_Mean, label="Test_mean", linewidth=2.0, color = "green")
-axis[1].set_title("MAPE, Hidden_Tanh 10, non_regul")
-axis[1].legend(loc="best")
 
- 
+# figure, axis = plt.subplots(1,2) 
+# axis[0].plot(List_reg, List_MSE_Train_Min, label="Train_min", linewidth=1.0, color = "red")
+# axis[0].plot(List_reg, List_MSE_Train_Max, label="Train_max", linewidth=1.0, color = "red")
+# axis[0].plot(List_reg, List_MSE_Train_Mean, label="Train_mean", linewidth=2.0, color = "red")
+# axis[0].plot(List_reg, List_MSE_Test_Min, label="Test_min", linewidth=1.0, color = "green")
+# axis[0].plot(List_reg, List_MSE_Test_Max, label="Test_max", linewidth=1.0, color = "green")
+# axis[0].plot(List_reg, List_MSE_Test_Mean, label="Test_mean", linewidth=2.0, color = "green")
+# axis[0].set_title("MSE, Hidden_Tanh 10, non_regul")
+# axis[0].legend(loc="best")
+
+
+
+# axis[1].plot(List_reg, List_MAPE_Train_Min, label="Train_min", linewidth=1.0, color = "red")
+# axis[1].plot(List_reg, List_MAPE_Train_Max, label="Train_max", linewidth=1.0, color = "red")
+# axis[1].plot(List_reg, List_MAPE_Train_Mean, label="Train_mean", linewidth=2.0, color = "red")
+# axis[1].plot(List_reg, List_MAPE_Test_Min, label="Test_min", linewidth=1.0, color = "green")
+# axis[1].plot(List_reg, List_MAPE_Test_Max, label="Test_max", linewidth=1.0, color = "green")
+# axis[1].plot(List_reg, List_MAPE_Test_Mean, label="Test_mean", linewidth=2.0, color = "green")
+# axis[1].set_title("MAPE, Hidden_Tanh 10, non_regul")
+# axis[1].legend(loc="best")
+
+
 List_MSE_non_Min = np.copy(List_MSE_Test_Min)
 List_MSE_non_Max = np.copy(List_MSE_Test_Max)
 List_MSE_non_Mean = np.copy(List_MSE_Test_Mean) 
+
 List_MAPE_non_Min = np.copy(List_MAPE_Test_Min) 
 List_MAPE_non_Max = np.copy(List_MAPE_Test_Max)  
 List_MAPE_non_Mean = np.copy(List_MAPE_Test_Mean)  
 
+List_GRE_non_Min = np.copy(List_GRE_Test_Min)
+List_GRE_non_Max = np.copy(List_GRE_Test_Max)
+List_GRE_non_Mean = np.copy(List_GRE_Test_Mean) 
 
 List_MSE_non_Std = np.copy(List_MSE_Test_Std) 
 List_MAPE_non_Std = np.copy(List_MAPE_Test_Std)
+List_GRE_non_Std = np.copy(List_GRE_Test_Std) 
+
+
+
 
 
 
@@ -835,78 +886,108 @@ for count, reg in enumerate(List_reg):
         network.add(layers.Dense(units = 10, activation = activ_func, input_shape=(l_feat,), kernel_regularizer=regularizers.L1(10**reg)))
         network.add(layers.Dense(units=1, activation = 'linear'))
         network.compile(loss=loss_func, optimizer= keras.optimizers.Adam(0.005, decay = 0.005), metrics=['mean_squared_error']) 
-        history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 1000,batch_size = 50, validation_split = 0.1)
-        if iteration == Number_measure - 1:
-            plot_loss(history, string_l = "NN Adam MAE", draw_val = True)
+        history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 1000,batch_size = 50)
+        # if iteration == Number_measure - 1:
+        #     plot_loss(history, string_l = "NN Adam MAE", draw_val = True)
+       
         MSE_Train[iteration] = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
         MAPE_Train[iteration] = mean_absolute_percentage_error(y_train,network.predict(X_train_scaled_poly).flatten())
+        GRE_Train[iteration] = gate_rate_error(y_train,network.predict(X_train_scaled_poly).flatten())    
+        
         MSE_Test[iteration] = mean_s_error(y_test,network.predict(X_test_scaled_poly).flatten())    
         MAPE_Test[iteration] = mean_absolute_percentage_error(y_test,network.predict(X_test_scaled_poly).flatten())
+        GRE_Test[iteration] = gate_rate_error(y_test,network.predict(X_test_scaled_poly).flatten())    
         keras.backend.clear_session()
+
     List_MSE_Train_Min[count] = MSE_Train.min() 
     List_MSE_Train_Max[count] = MSE_Train.max() 
     List_MSE_Train_Mean[count] = MSE_Train.mean() 
+   
     List_MAPE_Train_Min[count] = MAPE_Train.min() 
     List_MAPE_Train_Max[count] = MAPE_Train.max() 
     List_MAPE_Train_Mean[count] = MAPE_Train.mean() 
 
+    List_GRE_Train_Min[count] = GRE_Train.min() 
+    List_GRE_Train_Max[count] = GRE_Train.max() 
+    List_GRE_Train_Mean[count] = GRE_Train.mean() 
+
+
+
     List_MSE_Test_Min[count] = MSE_Test.min() 
     List_MSE_Test_Max[count] = MSE_Test.max() 
     List_MSE_Test_Mean[count] = MSE_Test.mean() 
+   
     List_MAPE_Test_Min[count] = MAPE_Test.min() 
     List_MAPE_Test_Max[count] = MAPE_Test.max()  
     List_MAPE_Test_Mean[count] = MAPE_Test.mean()  
+   
+    List_GRE_Test_Min[count] = GRE_Test.min() 
+    List_GRE_Test_Max[count] = GRE_Test.max() 
+    List_GRE_Test_Mean[count] = GRE_Test.mean() 
+   
 
     List_MSE_Test_Std[count] = MSE_Test.std()
     List_MAPE_Test_Std[count] = MAPE_Test.std()
+    List_GRE_Test_Std[count] = GRE_Test.std()
+    
+    print("L1", count, reg)
 
-    print(count, reg, MAPE_Test.min(), MAPE_Test.mean())
-
-
-figure, axis = plt.subplots(1,2) 
-axis[0].plot(List_reg, List_MSE_Train_Min, linewidth=0.75, color = "red")
-axis[0].plot(List_reg, List_MSE_Train_Max, linewidth=0.75, color = "red")
-axis[0].plot(List_reg, List_MSE_Train_Mean, label="Train_mean", linewidth=2.0, color = "red")
-
-axis[0].plot(List_reg, List_MSE_non_Min, linewidth=0.75, color = "black")
-axis[0].plot(List_reg, List_MSE_non_Max, linewidth=0.75, color = "black")
-axis[0].plot(List_reg, List_MSE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
-
-axis[0].plot(List_reg, List_MSE_Test_Min, linewidth=0.75, color = "green")
-axis[0].plot(List_reg, List_MSE_Test_Max, linewidth=0.75, color = "green")
-axis[0].plot(List_reg, List_MSE_Test_Mean, label="Test_Reg_mean", linewidth=2.0, color = "green")
-
-axis[0].set_title("MSE, Hidden_Tanh 10, L1_regul")
-axis[0].legend(loc="best")
+    print(MSE_Test.mean(), MSE_Test.min(), MSE_Test.max(), MSE_Test.std())
+    print(MAPE_Test.mean(), MAPE_Test.min(), MAPE_Test.max(), MAPE_Test.std())
+    print(GRE_Test.mean(), GRE_Test.min(), GRE_Test.max(), GRE_Test.std())
 
 
 
-axis[1].plot(List_reg, List_MAPE_Train_Min, linewidth=0.75, color = "red")
-axis[1].plot(List_reg, List_MAPE_Train_Max, linewidth=0.75, color = "red")
-axis[1].plot(List_reg, List_MAPE_Train_Mean, label="Train_mean", linewidth=2.0, color = "red")
+# figure, axis = plt.subplots(1,2) 
+# axis[0].plot(List_reg, List_MSE_Train_Min, linewidth=0.75, color = "red")
+# axis[0].plot(List_reg, List_MSE_Train_Max, linewidth=0.75, color = "red")
+# axis[0].plot(List_reg, List_MSE_Train_Mean, label="Train_mean", linewidth=2.0, color = "red")
+
+# axis[0].plot(List_reg, List_MSE_non_Min, linewidth=0.75, color = "black")
+# axis[0].plot(List_reg, List_MSE_non_Max, linewidth=0.75, color = "black")
+# axis[0].plot(List_reg, List_MSE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
+
+# axis[0].plot(List_reg, List_MSE_Test_Min, linewidth=0.75, color = "green")
+# axis[0].plot(List_reg, List_MSE_Test_Max, linewidth=0.75, color = "green")
+# axis[0].plot(List_reg, List_MSE_Test_Mean, label="Test_Reg_mean", linewidth=2.0, color = "green")
+
+# axis[0].set_title("MSE, Hidden_Tanh 10, L1_regul")
+# axis[0].legend(loc="best")
 
 
-axis[1].plot(List_reg, List_MAPE_non_Min, linewidth=0.75, color = "black")
-axis[1].plot(List_reg, List_MAPE_non_Max, linewidth=0.75, color = "black")
-axis[1].plot(List_reg, List_MAPE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
 
-axis[1].plot(List_reg, List_MAPE_Test_Min, linewidth=0.75, color = "green")
-axis[1].plot(List_reg, List_MAPE_Test_Max, linewidth=0.75, color = "green")
-axis[1].plot(List_reg, List_MAPE_Test_Mean, label="Test_Reg_mean", linewidth=2.0, color = "green")
+# axis[1].plot(List_reg, List_MAPE_Train_Min, linewidth=0.75, color = "red")
+# axis[1].plot(List_reg, List_MAPE_Train_Max, linewidth=0.75, color = "red")
+# axis[1].plot(List_reg, List_MAPE_Train_Mean, label="Train_mean", linewidth=2.0, color = "red")
 
-axis[1].set_title("MAPE, Hidden_Tanh 10, L1_regul")
-axis[1].legend(loc="best")
+
+# axis[1].plot(List_reg, List_MAPE_non_Min, linewidth=0.75, color = "black")
+# axis[1].plot(List_reg, List_MAPE_non_Max, linewidth=0.75, color = "black")
+# axis[1].plot(List_reg, List_MAPE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
+
+# axis[1].plot(List_reg, List_MAPE_Test_Min, linewidth=0.75, color = "green")
+# axis[1].plot(List_reg, List_MAPE_Test_Max, linewidth=0.75, color = "green")
+# axis[1].plot(List_reg, List_MAPE_Test_Mean, label="Test_Reg_mean", linewidth=2.0, color = "green")
+
+# axis[1].set_title("MAPE, Hidden_Tanh 10, L1_regul")
+# axis[1].legend(loc="best")
 
 
 List_MSE_L1_Min = np.copy(List_MSE_Test_Min)
 List_MSE_L1_Max = np.copy(List_MSE_Test_Max)
 List_MSE_L1_Mean = np.copy(List_MSE_Test_Mean) 
+
 List_MAPE_L1_Min = np.copy(List_MAPE_Test_Min) 
 List_MAPE_L1_Max = np.copy(List_MAPE_Test_Max)  
 List_MAPE_L1_Mean = np.copy(List_MAPE_Test_Mean)  
 
+List_GRE_L1_Min = np.copy(List_GRE_Test_Min)
+List_GRE_L1_Max = np.copy(List_GRE_Test_Max)
+List_GRE_L1_Mean = np.copy(List_GRE_Test_Mean) 
+
 List_MSE_L1_Std = np.copy(List_MSE_Test_Std) 
-List_MAPE_L1_Std = np.copy(List_MAPE_Test_Std) 
+List_MAPE_L1_Std = np.copy(List_MAPE_Test_Std)
+List_GRE_L1_Std = np.copy(List_GRE_Test_Std) 
 
 
 
@@ -1069,88 +1150,89 @@ List_MAPE_L1_Std = np.copy(List_MAPE_Test_Std)
 
 
 
-figure, axis = plt.subplots(1,2)
+# figure, axis = plt.subplots(1,2)
 
-axis[0].plot(List_reg, List_MSE_non_Min, linewidth=0.75, color = "black")
-axis[0].plot(List_reg, List_MSE_non_Max, linewidth=0.75, color = "black")
-axis[0].plot(List_reg, List_MSE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
+# axis[0].plot(List_reg, List_MSE_non_Min, linewidth=0.75, color = "black")
+# axis[0].plot(List_reg, List_MSE_non_Max, linewidth=0.75, color = "black")
+# axis[0].plot(List_reg, List_MSE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
 
-axis[0].plot(List_reg, List_MSE_L1_Min, linewidth=0.75, color = "red")
-axis[0].plot(List_reg, List_MSE_L1_Max, linewidth=0.75, color = "red")
-axis[0].plot(List_reg, List_MSE_L1_Mean, label="L1Reg_mean", linewidth=2.0, color = "red")
+# axis[0].plot(List_reg, List_MSE_L1_Min, linewidth=0.75, color = "red")
+# axis[0].plot(List_reg, List_MSE_L1_Max, linewidth=0.75, color = "red")
+# axis[0].plot(List_reg, List_MSE_L1_Mean, label="L1Reg_mean", linewidth=2.0, color = "red")
 
-# axis[0].plot(List_reg, List_MSE_L2_Min, linewidth=0.75, color = "green")
-# axis[0].plot(List_reg, List_MSE_L2_Max, linewidth=0.75, color = "green")
-# axis[0].plot(List_reg, List_MSE_L2_Mean, label="L2Reg_mean", linewidth=2.0, color = "green")
+# # axis[0].plot(List_reg, List_MSE_L2_Min, linewidth=0.75, color = "green")
+# # axis[0].plot(List_reg, List_MSE_L2_Max, linewidth=0.75, color = "green")
+# # axis[0].plot(List_reg, List_MSE_L2_Mean, label="L2Reg_mean", linewidth=2.0, color = "green")
 
-# axis[0].plot(List_reg, List_MSE_L1L2_Min, linewidth=0.75, color = "blue")
-# axis[0].plot(List_reg, List_MSE_L1L2_Max, linewidth=0.75, color = "blue")
-# axis[0].plot(List_reg, List_MSE_L1L2_Mean, label="L1L2Reg_mean", linewidth=2.0, color = "blue")
-
-
-axis[0].set_title("MSE, Hidden_Tanh 10")
-axis[0].legend(loc="best")
+# # axis[0].plot(List_reg, List_MSE_L1L2_Min, linewidth=0.75, color = "blue")
+# # axis[0].plot(List_reg, List_MSE_L1L2_Max, linewidth=0.75, color = "blue")
+# # axis[0].plot(List_reg, List_MSE_L1L2_Mean, label="L1L2Reg_mean", linewidth=2.0, color = "blue")
 
 
-
-axis[1].plot(List_reg, List_MAPE_non_Min, linewidth=0.75, color = "black")
-axis[1].plot(List_reg, List_MAPE_non_Max, linewidth=0.75, color = "black")
-axis[1].plot(List_reg, List_MAPE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
-
-axis[1].plot(List_reg, List_MAPE_L1_Min, linewidth=0.75, color = "red")
-axis[1].plot(List_reg, List_MAPE_L1_Max, linewidth=0.75, color = "red")
-axis[1].plot(List_reg, List_MAPE_L1_Mean, label="L1Reg_mean", linewidth=2.0, color = "red")
-
-# axis[1].plot(List_reg, List_MAPE_L2_Min, linewidth=0.75, color = "green")
-# axis[1].plot(List_reg, List_MAPE_L2_Max, linewidth=0.75, color = "green")
-# axis[1].plot(List_reg, List_MAPE_L2_Mean, label="L2Reg_mean", linewidth=2.0, color = "green")
-
-# axis[1].plot(List_reg, List_MAPE_L1L2_Min, linewidth=0.75, color = "blue")
-# axis[1].plot(List_reg, List_MAPE_L1L2_Max, linewidth=0.75, color = "blue")
-# axis[1].plot(List_reg, List_MAPE_L1L2_Mean, label="L1L2Reg_mean", linewidth=2.0, color = "blue")
-
-axis[1].set_title("MAPE, Hidden_Tanh 10")
-axis[1].legend(loc="best")
-
-
-figure, axis = plt.subplots(1,2)
-
-axis[0].plot(List_reg, List_MSE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
-axis[0].plot(List_reg, List_MSE_L1_Mean, label="L1Reg_mean", linewidth=2.0, color = "red")
-# axis[0].plot(List_reg, List_MSE_L2_Mean, label="L2Reg_mean", linewidth=2.0, color = "green")
-# axis[0].plot(List_reg, List_MSE_L1L2_Mean, label="L1L2Reg_mean", linewidth=2.0, color = "blue")
-axis[0].set_title("MSE, Hidden_Tanh 10, Mean")
-axis[0].legend(loc="best")
-
-axis[1].plot(List_reg, List_MAPE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
-axis[1].plot(List_reg, List_MAPE_L1_Mean, label="L1Reg_mean", linewidth=2.0, color = "red")
-# axis[1].plot(List_reg, List_MAPE_L2_Mean, label="L2Reg_mean", linewidth=2.0, color = "green")
-# axis[1].plot(List_reg, List_MAPE_L1L2_Mean, label="L1L2Reg_mean", linewidth=2.0, color = "blue")
-axis[1].set_title("MAPE, Hidden_Tanh 10, Mean")
-axis[1].legend(loc="best")
+# axis[0].set_title("MSE, Hidden_Tanh 10")
+# axis[0].legend(loc="best")
 
 
 
-figure, axis = plt.subplots(1,2)
+# axis[1].plot(List_reg, List_MAPE_non_Min, linewidth=0.75, color = "black")
+# axis[1].plot(List_reg, List_MAPE_non_Max, linewidth=0.75, color = "black")
+# axis[1].plot(List_reg, List_MAPE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
 
-axis[0].plot(List_reg, List_MSE_non_Min, label="NonReg_Min", linewidth=2.0, color = "black")
-axis[0].plot(List_reg, List_MSE_L1_Min, label="L1Reg_Min", linewidth=2.0, color = "red")
-# axis[0].plot(List_reg, List_MSE_L2_Min, label="L2Reg_Min", linewidth=2.0, color = "green")
-# axis[0].plot(List_reg, List_MSE_L1L2_Min, label="L1L2Reg_Min", linewidth=2.0, color = "blue")
-axis[0].set_title("MSE, Hidden_Tanh 10, Min")
-axis[0].legend(loc="best")
+# axis[1].plot(List_reg, List_MAPE_L1_Min, linewidth=0.75, color = "red")
+# axis[1].plot(List_reg, List_MAPE_L1_Max, linewidth=0.75, color = "red")
+# axis[1].plot(List_reg, List_MAPE_L1_Mean, label="L1Reg_mean", linewidth=2.0, color = "red")
 
-axis[1].plot(List_reg, List_MAPE_non_Min, label="NonReg_Min", linewidth=2.0, color = "black")
-axis[1].plot(List_reg, List_MAPE_L1_Min, label="L1Reg_Min", linewidth=2.0, color = "red")
-# axis[1].plot(List_reg, List_MAPE_L2_Min, label="L2Reg_Min", linewidth=2.0, color = "green")
-# axis[1].plot(List_reg, List_MAPE_L1L2_Min, label="L1L2Reg_Min", linewidth=2.0, color = "blue")
-axis[1].set_title("MAPE, Hidden_Tanh 10, Min")
-axis[1].legend(loc="best")
+# # axis[1].plot(List_reg, List_MAPE_L2_Min, linewidth=0.75, color = "green")
+# # axis[1].plot(List_reg, List_MAPE_L2_Max, linewidth=0.75, color = "green")
+# # axis[1].plot(List_reg, List_MAPE_L2_Mean, label="L2Reg_mean", linewidth=2.0, color = "green")
 
+# # axis[1].plot(List_reg, List_MAPE_L1L2_Min, linewidth=0.75, color = "blue")
+# # axis[1].plot(List_reg, List_MAPE_L1L2_Max, linewidth=0.75, color = "blue")
+# # axis[1].plot(List_reg, List_MAPE_L1L2_Mean, label="L1L2Reg_mean", linewidth=2.0, color = "blue")
 
-
+# axis[1].set_title("MAPE, Hidden_Tanh 10")
+# axis[1].legend(loc="best")
 
 
+# figure, axis = plt.subplots(1,2)
+
+# axis[0].plot(List_reg, List_MSE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
+# axis[0].plot(List_reg, List_MSE_L1_Mean, label="L1Reg_mean", linewidth=2.0, color = "red")
+# # axis[0].plot(List_reg, List_MSE_L2_Mean, label="L2Reg_mean", linewidth=2.0, color = "green")
+# # axis[0].plot(List_reg, List_MSE_L1L2_Mean, label="L1L2Reg_mean", linewidth=2.0, color = "blue")
+# axis[0].set_title("MSE, Hidden_Tanh 10, Mean")
+# axis[0].legend(loc="best")
+
+# axis[1].plot(List_reg, List_MAPE_non_Mean, label="NonReg_mean", linewidth=2.0, color = "black")
+# axis[1].plot(List_reg, List_MAPE_L1_Mean, label="L1Reg_mean", linewidth=2.0, color = "red")
+# # axis[1].plot(List_reg, List_MAPE_L2_Mean, label="L2Reg_mean", linewidth=2.0, color = "green")
+# # axis[1].plot(List_reg, List_MAPE_L1L2_Mean, label="L1L2Reg_mean", linewidth=2.0, color = "blue")
+# axis[1].set_title("MAPE, Hidden_Tanh 10, Mean")
+# axis[1].legend(loc="best")
+
+
+
+# figure, axis = plt.subplots(1,2)
+
+# axis[0].plot(List_reg, List_MSE_non_Min, label="NonReg_Min", linewidth=2.0, color = "black")
+# axis[0].plot(List_reg, List_MSE_L1_Min, label="L1Reg_Min", linewidth=2.0, color = "red")
+# # axis[0].plot(List_reg, List_MSE_L2_Min, label="L2Reg_Min", linewidth=2.0, color = "green")
+# # axis[0].plot(List_reg, List_MSE_L1L2_Min, label="L1L2Reg_Min", linewidth=2.0, color = "blue")
+# axis[0].set_title("MSE, Hidden_Tanh 10, Min")
+# axis[0].legend(loc="best")
+
+# axis[1].plot(List_reg, List_MAPE_non_Min, label="NonReg_Min", linewidth=2.0, color = "black")
+# axis[1].plot(List_reg, List_MAPE_L1_Min, label="L1Reg_Min", linewidth=2.0, color = "red")
+# # axis[1].plot(List_reg, List_MAPE_L2_Min, label="L2Reg_Min", linewidth=2.0, color = "green")
+# # axis[1].plot(List_reg, List_MAPE_L1L2_Min, label="L1L2Reg_Min", linewidth=2.0, color = "blue")
+# axis[1].set_title("MAPE, Hidden_Tanh 10, Min")
+# axis[1].legend(loc="best")
+
+
+
+
+
+                                                # MSE_MAPE
 
 figure, axis = plt.subplots(1,2)
 axis[0].fill_between(List_reg, List_MSE_non_Min,List_MSE_non_Max,
@@ -1201,11 +1283,59 @@ axis[1].legend(loc="best")
 
 
 
+                                                # MSE_GRE
+
+figure, axis = plt.subplots(1,2)
+axis[0].fill_between(List_reg, List_MSE_non_Min,List_MSE_non_Max,
+                facecolor='tomato',
+                alpha = 0.5,
+                color = 'tomato',    #  цвет линий
+                linewidth = 2,      #  ширина линий
+                linestyle = '--',
+                label = "Non Reg")   #  начертание линий
+axis[0].fill_between(List_reg, List_MSE_L1_Min,List_MSE_L1_Max,
+                facecolor='lime',
+                alpha = 0.5,
+                color = 'lime',    #  цвет линий
+                linewidth = 2,      #  ширина линий
+                linestyle = '--',
+                label = "L1 Reg")   #  начертание линий
+
+axis[0].plot(List_reg, List_MSE_non_Mean, label="Non Reg Mean", linewidth=2.0, color = "red")
+axis[0].plot(List_reg, List_MSE_L1_Mean, label="L1 Reg Mean", linewidth=2.0, color = "green")
+
+
+
+axis[0].set_title("MSE, Hidden_Tanh 10")
+axis[0].legend(loc="best")
+
+axis[1].fill_between(List_reg, List_GRE_non_Min,List_GRE_non_Max,
+                facecolor='tomato',
+                alpha = 0.5,
+                color = 'tomato',    #  цвет линий
+                linewidth = 2,      #  ширина линий
+                linestyle = '--',
+                label = "Non Reg")   #  начертание линий
+axis[1].fill_between(List_reg, List_GRE_L1_Min,List_GRE_L1_Max,
+                facecolor='lime',
+                alpha = 0.5,
+                color = 'lime',    #  цвет линий
+                linewidth = 2,      #  ширина линий
+                linestyle = '--',
+                label = "L1 Reg")   #  начертание линий
+
+axis[1].plot(List_reg, List_GRE_non_Mean, label="Non Reg Mean", linewidth=2.0, color = "red")
+axis[1].plot(List_reg, List_GRE_L1_Mean, label="L1 Reg Mean", linewidth=2.0, color = "green")
+
+
+axis[1].set_title("GRE, Hidden_Tanh 10")
+axis[1].legend(loc="best")
 
 
 
 
 
+                                                # MSE_MAPE
 
 figure, axis = plt.subplots(1,2)
 
@@ -1234,8 +1364,34 @@ axis[1].set_title("MAPE, Hidden_Tanh 10, Std")
 axis[1].legend(loc="best")
 
 
+                                                # MSE_GRE
 
 
+figure, axis = plt.subplots(1,2)
+
+axis[0].plot(List_reg, List_MSE_non_Max - List_MSE_non_Min, label="NonReg_Delta", linewidth=2.0, color = "black")
+axis[0].plot(List_reg, List_MSE_L1_Max - List_MSE_L1_Min, label="L1Reg_Delta", linewidth=2.0, color = "red")
+axis[0].set_title("MSE, Hidden_Tanh 10, Delta")
+axis[0].legend(loc="best")
+
+axis[1].plot(List_reg, List_GRE_non_Max - List_GRE_non_Min, label="NonReg_Delta", linewidth=2.0, color = "black")
+axis[1].plot(List_reg, List_GRE_L1_Max - List_GRE_L1_Min, label="L1Reg_Delta", linewidth=2.0, color = "red")
+axis[1].set_title("GRE, Hidden_Tanh 10, Delta")
+axis[1].legend(loc="best")
+
+
+
+figure, axis = plt.subplots(1,2)
+
+axis[0].plot(List_reg, List_MSE_non_Std, label="NonReg_Std", linewidth=2.0, color = "black")
+axis[0].plot(List_reg, List_MSE_L1_Std, label="L1Reg_Std", linewidth=2.0, color = "red")
+axis[0].set_title("MSE, Hidden_Tanh 10, Std")
+axis[0].legend(loc="best")
+
+axis[1].plot(List_reg, List_GRE_non_Std, label="NonReg_Std", linewidth=2.0, color = "black")
+axis[1].plot(List_reg, List_GRE_L1_Std, label="L1Reg_Std", linewidth=2.0, color = "red")
+axis[1].set_title("GRE, Hidden_Tanh 10, Std")
+axis[1].legend(loc="best")
 
 
 

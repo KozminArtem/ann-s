@@ -255,6 +255,23 @@ def plotModelResults(
     print(type(time_test.dt.month))
     print(type(prediction))
 
+    print(temp['MSE'].mean())
+    print(temp['MAPE'].mean())
+    print(temp['GRE'].mean())
+
+
+    print(temp[temp['CO_true'] > 3.01].shape[0])
+    print("MSE CO > 3.01", temp[temp['CO_true'] > 3.01]['MSE'].mean())
+    print("MAPE CO > 3.01", temp[temp['CO_true'] > 3.01]['MAPE'].mean())
+    print("GRE CO > 3.01", temp[temp['CO_true'] > 3.01]['GRE'].mean())
+
+    print(temp[temp['CO_true'] < 3.01].shape[0])
+    print("MSE CO < 3.01", temp[temp['CO_true'] < 3.01]['MSE'].mean())
+    print("MAPE CO < 3.01", temp[temp['CO_true'] < 3.01]['MAPE'].mean())
+    print("GRE CO < 3.01", temp[temp['CO_true'] < 3.01]['GRE'].mean())
+
+
+
 
     temp['Month'] = np.array(time_test.dt.month)
     print(temp['Month'])

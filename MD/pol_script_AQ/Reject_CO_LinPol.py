@@ -66,7 +66,7 @@ feat_CO = ['PT08.S1(CO)','T', 'PT08.S2(NMHC)', 'CO(GT)']
 
 Degree = 2
 # list_delete = []
-list_delete = ['T^2','R_NM^2']
+# list_delete = ['T^2','R_NM^2']
 # list_delete = ['T^2','PT08.S2(NMHC)^2']
 T_size = 0.9
 
@@ -131,7 +131,6 @@ def arr_gate_rate_error(y_true,y_pred):
             array_gre[j] = 1.0
         else: 
             array_gre[j] = 0.0   
-
     return array_gre        
 
 
