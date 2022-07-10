@@ -654,21 +654,70 @@ Number_epochs = 100
 # history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 500, validation_split = 0)
 
 def plot_loss(history, string_l = 'Loss', draw_val = False):
+    
     plt.figure(figsize = (16,10))
-    plt.plot(history.history['loss'], label='loss')
+    plt.plot(history.history['loss'], label='Train')
     if draw_val:
-        plt.plot(history.history['val_loss'], label='val_loss')
+        plt.plot(history.history['val_loss'], label='Valid')
     plt.title(string_l)
-    plt.ylim([0, 10])
     plt.xlabel('Epoch')
-    plt.ylabel('Error [MSE]')   
+    plt.ylabel('Error [?]')   
     plt.legend()
     plt.grid(True)
 
-# plot_loss(history, string_l = "NN(ML) Adam 0.001")
-# plotModelResults(network, X_train=X_train_scaled_poly, X_test=X_test_scaled_poly, string = "NN(ML) Adam 0.001,  No Window",  plot_intervals=True,\
-#                  y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test, plot_diff = False)
-# keras.backend.clear_session()
+    # plt.figure(figsize = (16,10))
+    # plt.plot(history.history['mean_absolute_error'], label='Train')
+    # if draw_val:
+    #     plt.plot(history.history['val_mean_absolute_error'], label='Valid')
+    # plt.title(string_l)
+    # # plt.ylim([0, 10])
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Error [MAE]')   
+    # plt.legend()
+    # plt.grid(True)
+
+
+
+    # plt.figure(figsize = (16,10))
+    # plt.plot(history.history['mean_absolute_percentage_error'], label='Train')
+    # if draw_val:
+    #     plt.plot(history.history['val_mean_absolute_percentage_error'], label='Valid')
+    # plt.title(string_l)
+
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Error [MAPE]')   
+    # plt.legend()
+    # plt.grid(True)
+
+
+    # plt.figure(figsize = (16,10))
+    # plt.plot(history.history['mean_squared_error'], label='Train')
+    # if draw_val:
+    #     plt.plot(history.history['val_mean_squared_error'], label='Valid')
+    # plt.title(string_l)
+    # # plt.ylim([0, 10])
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Error [MSE]')   
+    # plt.legend()
+    # plt.grid(True)
+
+
+
+
+    figure, axis = plt.subplots(1,2) 
+    axis[0].plot(history.history['mean_squared_error'], label="Train", linewidth=1.5, color = "red")
+    axis[0].plot(history.history['val_mean_squared_error'], label="Validation", linewidth=1.5, color = "green")
+    axis[0].set_title("MSE")
+    axis[0].set_xlabel('Epoch')
+    axis[0].set_ylabel('MSE')
+    axis[0].legend(loc="best")
+
+    axis[1].plot(history.history['mean_absolute_percentage_error'], label="Train", linewidth=1.5, color = "red")
+    axis[1].plot(history.history['val_mean_absolute_percentage_error'], label="Validation", linewidth=1.5, color = "green")
+    axis[1].set_title("MAPE")
+    axis[1].set_xlabel('Epoch')
+    axis[1].set_ylabel('MAPE')
+    axis[1].legend(loc="best")
 
 
 
@@ -680,18 +729,19 @@ def plot_loss(history, string_l = 'Loss', draw_val = False):
 
 
 
-# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(drop_bias = True)
-
-# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True, drop_bias = True)
-
-# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_window = True, drop_bias = True)
-
-X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True, add_window = True, drop_bias = True, Test_size = 7300)
 
 
-# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_hour = True, add_window = True)
-# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_window = True)
-# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True)
+
+
+
+
+
+
+
+
+All_Test_size = 2000   
+
+X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True, add_window = True, drop_bias = True, Test_size = All_Test_size)
 
 
 X_train_scaled_poly = X_train_scaled_poly.iloc[23:]
@@ -699,145 +749,180 @@ y_train = y_train.iloc[23:]
 time_train = time_train.iloc[23:]
 
 
-X_all_scaled_poly = X_train_scaled_poly.append(X_test_scaled_poly, ignore_index=True) 
-y_all = y_train.append(y_test, ignore_index=True)
-time_all = time_train.append(time_test, ignore_index = True)
 
 
 
 
 
-from sklearn.model_selection import GridSearchCV
-from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
-
-
-l_feat = X_train_scaled_poly.shape[1]
-activ_func = 'tanh'
-loss_func = 'mean_absolute_error'
-
-
-print(X_train_scaled_poly)
 
 
 
 
-b_1 = 0.9
-b_2 = 0.999
-eps = 1e-07
-lr = 0.005
-d = 0.005
 
 
-def network_model(l_r = 0.01, d_c = 0.001, b_1 = 0.9, b_2 = 0.999, eps = 1e-01, reg = -1, activ = 'tanh',n_layer = 1, n_neur = 10):
+
+
+
+
+
+
+
+
+List_Train = range(1, (All_Test_size-23)//24, 2)
+# print(List_Train)
+
+
+MSE_Train = np.array([np.NaN] * len(List_Train))
+MAPE_Train = np.array([np.NaN] * len(List_Train))
+GRE_Train = np.array([np.NaN] * len(List_Train))
+
+
+MSE_Test = np.array([np.NaN] * len(List_Train))
+MAPE_Test = np.array([np.NaN] * len(List_Train))
+GRE_Test = np.array([np.NaN] * len(List_Train))
+
+
+
+
+
+
+
+
+
+
+for iteration, temp_size in enumerate(List_Train):
+    # print(iteration,temp_size/24, temp_size)
+    print(temp_size*24)
+    x_aa, X_Train_temp, x_yy, y_train_temp = timeseries_train_test_split(X_train_scaled_poly, y_train, test_size = All_Test_size - 23 - temp_size*24)
+
+    # print("TRAIN TEMP TRAIN TEMP")
+    # print(X_Train_temp)
+    # print("TEST TEST TEST TEST")
+    # print(X_test_scaled_poly)
+
     network = models.Sequential()
-    for j in range(n_layer):
-        network.add(layers.Dense(units = n_neur, activation = activ, input_shape=(l_feat,), kernel_regularizer=regularizers.L1(10**reg)))
-    
-    network.add(layers.Dense(units = 1, activation = 'linear'))
-    network.compile(loss = 'mean_absolute_error', optimizer= keras.optimizers.Adam(learning_rate = l_r, decay = d_c, beta_1 = b_1, beta_2 = b_2, epsilon = eps), metrics='mean_absolute_percentage_error') 
-    return network
+    l_feat = X_Train_temp.shape[1]
+    # print(iteration, l_feat)
+    network.add(layers.Dense(units = 5, activation = 'tanh', input_shape=(l_feat,), kernel_regularizer=regularizers.L1(10**(-1))))
+    network.add(layers.Dense(units = 5, activation = 'tanh', kernel_regularizer=regularizers.L1(10**(-1))))
+    network.add(layers.Dense(units=1, activation = 'linear'))
+    network.compile(loss='mean_absolute_error', optimizer= keras.optimizers.Adam(learning_rate = 0.01, decay = 0.001, epsilon = 1e-01), metrics=['mean_absolute_error','mean_squared_error','mean_absolute_percentage_error']) 
+    history = network.fit(X_Train_temp, y_train_temp, verbose=0, epochs = 50 + 10*temp_size, batch_size = temp_size)
+
+
+    pr_X_train = network.predict(X_Train_temp).flatten()
+    pr_X_test = network.predict(X_test_scaled_poly).flatten()
+
+    MSE_Train[iteration] = mean_s_error(y_train_temp,pr_X_train)    
+    MAPE_Train[iteration]= mean_absolute_percentage_error(y_train_temp,pr_X_train)
+    GRE_Train[iteration] = gate_rate_error(y_train_temp,pr_X_train)
+
+    MSE_Test[iteration]  = mean_s_error(y_test,pr_X_test)    
+    MAPE_Test[iteration] = mean_absolute_percentage_error(y_test,pr_X_test)
+    GRE_Test[iteration]  = gate_rate_error(y_test,pr_X_test)
+    keras.backend.clear_session()
+
+
+MSE_NN_L1_Train = MSE_Train.copy()    
+MAPE_NN_L1_Train = MAPE_Train.copy()
+GRE_NN_L1_Train = GRE_Train.copy()
+
+MSE_NN_L1_Test = MSE_Test.copy()    
+MAPE_NN_L1_Test = MAPE_Test.copy()
+GRE_NN_L1_Test = GRE_Test.copy()
 
 
 
 
-FFNN = KerasRegressor(build_fn = network_model, verbose=0, batch_size = 50, epochs = 2000)
+plt.figure(figsize = (16,10))
+plt.plot(List_Train, MSE_Test, label="Test", linewidth=2.0, color = "red")
+plt.plot(List_Train, MSE_Train, label="Train", linewidth=2.0, color = "black")
+plt.title("MSE, Learning curve")
+plt.legend(loc="best")
 
+plt.figure(figsize = (16,10))
+plt.plot(List_Train, MAPE_Test, label="Test", linewidth=2.0, color = "red")
+plt.plot(List_Train, MAPE_Train, label="Train", linewidth=2.0, color = "black")
+plt.title("MAPE, Learning curve")
+plt.legend(loc="best")
 
-
-parameters = {
-              # 'l_r': [0.01, 0.05,  0.1],
-              # 'd_c': [0.001,0.005, 0.01],
-              # 'b_1': [0.8, 0.9, 0.99],
-              # 'b_2': [0.9, 0.99, 0.999],
-
-              # 'reg': [-1, -1.5],
-              # 'eps': [1e-07, 1e-01],
-              'n_layer': [1,2,3,4],
-              'n_neur': [3,5,7,10,13,15],
-              'activ': ['tanh','relu']
-            
-              # 'activ': ['linear', 'tanh', 'sigmoid', 'relu', 'exponential']
-              # 'epochs': [30, 100, 300, 1000],
-                }
-
-grid =  GridSearchCV(estimator = FFNN,
-                           param_grid = parameters,
-                           # scoring='neg_mean_squared_error',
-                           # scoring = "neg_mean_absolute_error",
-                           scoring = "neg_mean_absolute_percentage_error",
-                           cv = 10, 
-                           n_jobs = -1)
-
-
-grid_result = grid.fit(X_train_scaled_poly, y_train)
-
-
-print(grid_result.best_params_)
-print(grid_result.best_score_)
-
-
-# print(grid_result.cv_results_)
-
-df_result = pd.DataFrame(grid_result.cv_results_)
-print(df_result)
-
-df_result.to_csv("GSCV/GSCV_2000_V6_ep.csv", index=True)
-
-
-
+plt.figure(figsize = (16,10))
+plt.plot(List_Train, GRE_Test, label="Test", linewidth=2.0, color = "red")
+plt.plot(List_Train, GRE_Train, label="Train", linewidth=2.0, color = "black")
+plt.title("GRE, Learning curve")
+plt.legend(loc="best")
 
 
 
 
 
+for iteration, temp_size in enumerate(List_Train):
+    # print(iteration,temp_size/24, temp_size)
+    print(temp_size*24)
+    x_aa, X_Train_temp, x_yy, y_train_temp = timeseries_train_test_split(X_train_scaled_poly, y_train, test_size = All_Test_size - 23 - temp_size*24)
+
+    # print("TRAIN TEMP TRAIN TEMP")
+    # print(X_Train_temp)
+    # print("TEST TEST TEST TEST")
+    # print(X_test_scaled_poly)
+
+    network = models.Sequential()
+    l_feat = X_Train_temp.shape[1]
+    # print(iteration, l_feat)
+    network.add(layers.Dense(units = 5, activation = 'tanh', input_shape=(l_feat,)))
+    network.add(layers.Dense(units = 5, activation = 'tanh'))
+    network.add(layers.Dense(units=1, activation = 'linear'))
+    network.compile(loss='mean_absolute_error', optimizer= keras.optimizers.Adam(learning_rate = 0.01, decay = 0.001, epsilon = 1e-01), metrics=['mean_absolute_error','mean_squared_error','mean_absolute_percentage_error']) 
+    history = network.fit(X_Train_temp, y_train_temp, verbose=0, epochs = 50+10*temp_size, batch_size = temp_size)
+
+
+    pr_X_train = network.predict(X_Train_temp).flatten()
+    pr_X_test = network.predict(X_test_scaled_poly).flatten()
+
+    MSE_Train[iteration] = mean_s_error(y_train_temp,pr_X_train)    
+    MAPE_Train[iteration]= mean_absolute_percentage_error(y_train_temp,pr_X_train)
+    GRE_Train[iteration] = gate_rate_error(y_train_temp,pr_X_train)
+
+    MSE_Test[iteration]  = mean_s_error(y_test,pr_X_test)    
+    MAPE_Test[iteration] = mean_absolute_percentage_error(y_test,pr_X_test)
+    GRE_Test[iteration]  = gate_rate_error(y_test,pr_X_test)
+    keras.backend.clear_session()
+
+
+MSE_NN_non_Train = MSE_Train.copy()    
+MAPE_NN_non_Train = MAPE_Train.copy()
+GRE_NN_non_Train = GRE_Train.copy()
+
+MSE_NN_non_Test = MSE_Test.copy()    
+MAPE_NN_non_Test = MAPE_Test.copy()
+GRE_NN_non_Test = GRE_Test.copy()
+
+
+
+
+plt.figure(figsize = (16,10))
+plt.plot(List_Train, MSE_Test, label="Test", linewidth=2.0, color = "red")
+plt.plot(List_Train, MSE_Train, label="Train", linewidth=2.0, color = "black")
+plt.title("MSE, Learning curve")
+plt.legend(loc="best")
+
+plt.figure(figsize = (16,10))
+plt.plot(List_Train, MAPE_Test, label="Test", linewidth=2.0, color = "red")
+plt.plot(List_Train, MAPE_Train, label="Train", linewidth=2.0, color = "black")
+plt.title("MAPE, Learning curve")
+plt.legend(loc="best")
+
+plt.figure(figsize = (16,10))
+plt.plot(List_Train, GRE_Test, label="Test", linewidth=2.0, color = "red")
+plt.plot(List_Train, GRE_Train, label="Train", linewidth=2.0, color = "black")
+plt.title("GRE, Learning curve")
+plt.legend(loc="best")
 
 
 
 
 
 
-FFNN = KerasRegressor(build_fn = network_model, verbose=0, batch_size = 50, epochs = 1000)
-
-
-
-parameters = {
-              # 'l_r': [0.01, 0.05,  0.1],
-              # 'd_c': [0.001,0.005, 0.01],
-              # 'b_1': [0.8, 0.9, 0.99],
-              # 'b_2': [0.9, 0.99, 0.999],
-
-              # 'reg': [-1, -1.5],
-              # 'eps': [1e-07, 1e-01],
-              'n_layer': [1,2,3,4],
-              'n_neur': [3,5,7,10,13,15],
-              'activ': ['tanh','relu']
-            
-              # 'activ': ['linear', 'tanh', 'sigmoid', 'relu', 'exponential']
-              # 'epochs': [30, 100, 300, 1000],
-                }
-
-grid =  GridSearchCV(estimator = FFNN,
-                           param_grid = parameters,
-                           # scoring='neg_mean_squared_error',
-                           # scoring = "neg_mean_absolute_error",
-                           scoring = "neg_mean_absolute_percentage_error",
-                           cv = 10, 
-                           n_jobs = -1)
-
-
-grid_result = grid.fit(X_train_scaled_poly, y_train)
-
-
-print(grid_result.best_params_)
-print(grid_result.best_score_)
-
-
-# print(grid_result.cv_results_)
-
-df_result = pd.DataFrame(grid_result.cv_results_)
-print(df_result)
-
-df_result.to_csv("GSCV/GSCV_1000_V6_ep.csv", index=True)
 
 
 
@@ -847,7 +932,108 @@ df_result.to_csv("GSCV/GSCV_1000_V6_ep.csv", index=True)
 
 
 
-# history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 1000,batch_size = 50)
+
+
+
+# for count, temp_size in enumerate(List_Train):
+#     # print(count,temp_size/24, temp_size)
+#     x_aa, X_Train_temp, x_yy, y_train_temp = timeseries_train_test_split(X_train_scaled_poly, y_train, test_size = All_Test_size - 23 - temp_size*24)
+
+#     lr = LinearRegression()
+#     lr.fit(X_Train_temp, y_train_temp)
+
+#     prediction_test = lr.predict(X_test_scaled_poly)
+#     # print(prediction_test)
+#     MAPE_Test[count] = mean_absolute_percentage_error(y_test, prediction_test)
+#     MSE_Test[count] = mean_s_error(y_test, prediction_test)
+#     GRE_Test[count] = gate_rate_error(y_test, prediction_test)   
+
+
+#     prediction_train = lr.predict(X_Train_temp)
+#     MAPE_Train[count] = mean_absolute_percentage_error(y_train_temp, prediction_train)
+#     MSE_Train[count] = mean_s_error(y_train_temp, prediction_train)
+#     GRE_Train[count] = gate_rate_error(y_train_temp, prediction_train)   
+ 
+
+
+# MSE_non_Train = np.copy(MSE_Train)
+# GRE_non_Train = np.copy(GRE_Train)
+# MAPE_non_Train = np.copy(MAPE_Train)
+
+
+# MSE_non_Test = np.copy(MSE_Test)
+# GRE_non_Test = np.copy(GRE_Test)
+# MAPE_non_Test = np.copy(MAPE_Test)
+
+
+
+
+
+
+
+
+
+
+
+
+figure, axis = plt.subplots(1,2)
+
+axis[0].plot(List_Train, MSE_NN_non_Test, label="Test NN", linewidth=2.0, color = "green")
+axis[0].plot(List_Train, MSE_NN_L1_Test, label="Test NN L1", linewidth=2.0, color = "red")
+# axis[0].plot(List_Train, MSE_non_Test, label="Test Lin ", linewidth=2.0, color = "black")
+
+axis[0].plot(List_Train, MSE_NN_non_Train, label="Train NN", linewidth=2.0, color = "lime")
+axis[0].plot(List_Train, MSE_NN_L1_Train, label="Train NN L1", linewidth=2.0, color = "darkorange")
+# axis[0].plot(List_Train, MSE_non_Train, label="Train Lin ", linewidth=2.0, color = "grey")
+
+
+axis[0].set_title("MSE, Learning curve")
+axis[0].legend(loc="best")
+
+
+axis[1].plot(List_Train, MAPE_NN_non_Test, label="Test NN", linewidth=2.0, color = "green")
+axis[1].plot(List_Train, MAPE_NN_L1_Test, label="Test NN L1", linewidth=2.0, color = "red")
+# axis[1].plot(List_Train, MAPE_non_Test, label="Test Lin", linewidth=2.0, color = "black")
+
+
+axis[1].plot(List_Train, MAPE_NN_non_Train, label="Train NN", linewidth=2.0, color = "lime")
+axis[1].plot(List_Train, MAPE_NN_L1_Train, label="Train NN L1 ", linewidth=2.0, color = "darkorange")
+# axis[1].plot(List_Train, MAPE_non_Train, label="Train Lin", linewidth=2.0, color = "grey")
+
+
+axis[1].set_title("MAPE, Learning curve")
+axis[1].legend(loc="best")
+
+
+
+
+
+figure, axis = plt.subplots(1,2)
+
+axis[0].plot(List_Train, MSE_NN_non_Test, label="Test NN", linewidth=2.0, color = "green")
+axis[0].plot(List_Train, MSE_NN_L1_Test, label="Test NN L1", linewidth=2.0, color = "red")
+# axis[0].plot(List_Train, MSE_non_Test, label="Test Lin", linewidth=2.0, color = "black")
+
+axis[0].plot(List_Train, MSE_NN_non_Train, label="Train NN", linewidth=2.0, color = "lime")
+axis[0].plot(List_Train, MSE_NN_L1_Train, label="Train NN L1", linewidth=2.0, color = "darkorange")
+# axis[0].plot(List_Train, MSE_non_Train, label="Train Lin", linewidth=2.0, color = "grey")
+
+
+axis[0].set_title("MSE, Learning curve")
+axis[0].legend(loc="best")
+
+
+axis[1].plot(List_Train, GRE_NN_non_Test, label="Test NN", linewidth=2.0, color = "green")
+axis[1].plot(List_Train, GRE_NN_L1_Test, label="Test NN L1", linewidth=2.0, color = "red")
+# axis[1].plot(List_Train, GRE_non_Test, label="Test Lin", linewidth=2.0, color = "black")
+
+axis[1].plot(List_Train, GRE_NN_non_Train, label="Train NN", linewidth=2.0, color = "lime")
+axis[1].plot(List_Train, GRE_NN_L1_Train, label="Train NN L1", linewidth=2.0, color = "darkorange")
+# axis[1].plot(List_Train, GRE_non_Train, label="Train Lin", linewidth=2.0, color = "grey")
+
+axis[1].set_title("GRE, Learning curve")
+axis[1].legend(loc="best")
+
 
 
 

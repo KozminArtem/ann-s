@@ -34,30 +34,79 @@ import datetime
 from tensorflow import keras
 
 
+
+
+
+
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 
 print()
-print("GSCV ",500)
-df_500 = pd.read_csv('GSCV_500_V5_ep.csv') 
+print("GSCV ",1000)
+df_1000 = pd.read_csv('GSCV_1000_V6_ep.csv') 
 
-list_column = ['param_l_r', 'param_d_c','param_eps','param_activ', 'mean_test_score','std_test_score','rank_test_score']
-df_GSCV_500 = df_500[list_column]
-df_GSCV_500.sort_values(by='rank_test_score', inplace = True)
-print(df_GSCV_500.head(90))
-# print(df_GSCV_500.tail(20))
+list_column = ['param_n_layer', 'param_n_neur','param_activ', 'mean_test_score','std_test_score','rank_test_score']
+df_GSCV_1000 = df_1000[list_column]
+df_GSCV_1000.sort_values(by='rank_test_score', inplace = True)
+print(df_GSCV_1000.head(48))
+# print(df_GSCV_1000.tail(20))
 
 
 
 print()
-print("GSCV ",1000)
-df_1000 = pd.read_csv('GSCV_1000_V5_ep.csv') 
+print("GSCV ",2000)
+df_2000 = pd.read_csv('GSCV_2000_V6_ep.csv') 
 
-list_column = ['param_l_r', 'param_d_c','param_eps','param_activ', 'mean_test_score','std_test_score','rank_test_score']
-df_GSCV_1000 = df_1000[list_column]
-df_GSCV_1000.sort_values(by='rank_test_score', inplace = True)
-print(df_GSCV_1000.head(90))
-# print(df_GSCV_1000.tail(20))
+list_column = ['param_n_layer', 'param_n_neur','param_activ', 'mean_test_score','std_test_score','rank_test_score']
+df_GSCV_2000 = df_2000[list_column]
+df_GSCV_2000.sort_values(by='rank_test_score', inplace = True)
+print(df_GSCV_2000.head(48))
+# print(df_GSCV_2000.tail(20))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+													# VERSION 5
+
+
+# pd.set_option('display.max_rows', None)
+# pd.set_option('display.max_columns', None)
+
+# print()
+# print("GSCV ",500)
+# df_500 = pd.read_csv('GSCV_500_V5_ep.csv') 
+
+# list_column = ['param_l_r', 'param_d_c','param_eps','param_activ', 'mean_test_score','std_test_score','rank_test_score']
+# df_GSCV_500 = df_500[list_column]
+# df_GSCV_500.sort_values(by='rank_test_score', inplace = True)
+# print(df_GSCV_500.head(90))
+# # print(df_GSCV_500.tail(20))
+
+
+
+# print()
+# print("GSCV ",1000)
+# df_1000 = pd.read_csv('GSCV_1000_V5_ep.csv') 
+
+# list_column = ['param_l_r', 'param_d_c','param_eps','param_activ', 'mean_test_score','std_test_score','rank_test_score']
+# df_GSCV_1000 = df_1000[list_column]
+# df_GSCV_1000.sort_values(by='rank_test_score', inplace = True)
+# print(df_GSCV_1000.head(90))
+# # print(df_GSCV_1000.tail(20))
 
 
 

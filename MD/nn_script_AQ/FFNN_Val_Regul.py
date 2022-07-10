@@ -746,8 +746,6 @@ List_GRE_Test_Max = np.array([np.NaN] * len(List_reg))
 List_GRE_Test_Mean = np.array([np.NaN] * len(List_reg)) 
 
 
-
-
 List_MSE_Test_Std = np.array([np.NaN] * len(List_reg)) 
 List_MAPE_Test_Std = np.array([np.NaN] * len(List_reg)) 
 List_GRE_Test_Std = np.array([np.NaN] * len(List_reg)) 

@@ -618,7 +618,9 @@ data["hour"] = df_new['datetime'].dt.hour
 
 
 
-All_Test_size = 2304        
+# All_Test_size = 2304     
+
+All_Test_size = 100         
 
 MeanCo_hour = np.array([np.NaN] * 24)
 ar_hour = range(24)
@@ -685,7 +687,7 @@ X_test_poly_scaled['CO_Q1'] = COmean_test_scaled
 
 
 
-List_Train = range(2, All_Test_size//24, 3)
+List_Train = range(1, All_Test_size//24, 3)
 # print(List_Train)
 
 
