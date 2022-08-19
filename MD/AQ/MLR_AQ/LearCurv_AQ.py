@@ -620,12 +620,13 @@ data["hour"] = df_new['datetime'].dt.hour
 
 # All_Test_size = 2304     
 
-All_Test_size = 100         
+All_Test_size = 2000         
 
 MeanCo_hour = np.array([np.NaN] * 24)
 ar_hour = range(24)
 for i in range(24):
     MeanCo_hour[i] = data[data['hour'] == i]['CO(GT)'].mean()
+
 
 print(MeanCo_hour)
 data["hour"] = df_new['datetime'].dt.hour
@@ -633,6 +634,18 @@ data["CO_Q1"] = MeanCo_hour[data["hour"]]
 # data["weekday"] = df_new['datetime'].dt.weekday
 y = data.dropna()[feat_target]
 X = data.dropna().drop([feat_target], axis=1)
+
+
+print(data.corr() - data.iloc[1400:1640].corr())
+
+print(data.corr() - data.iloc[1700:2000].corr())
+
+
+print(data.corr() - data.iloc[:2000].corr())
+
+
+# print(data.iloc[:2000].corr())
+
 
 
 

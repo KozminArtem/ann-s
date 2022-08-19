@@ -611,20 +611,6 @@ Type_error = 'mean_squared_error'
 Type_optimizer='RMSprop'
 Number_epochs = 100
 
-# x = np.linspace(-1, 1)
-# plt.figure(figsize = (16,10))
-# plt.plot(x, keras.activations.linear(x),label="linear", color = 'red') 
-# plt.plot(x, keras.activations.elu(x),label="elu", color = 'chocolate') 
-# plt.plot(x, keras.activations.relu(x),label="relu", color = 'orange') 
-# plt.plot(x, keras.activations.selu(x),label="selu", color = 'gold') 
-# plt.plot(x, keras.activations.sigmoid(x),label="sigmoid", color = 'green') 
-# plt.plot(x, keras.activations.tanh(x),label="tanh", color = 'dodgerblue') 
-# plt.plot(x, keras.activations.exponential(x),label="exponential", color = 'indigo')  
-
-# plt.title("Activations Function")
-# plt.legend(loc="best")
-# plt.tight_layout()
-# plt.grid(True)
 
 
 
@@ -680,23 +666,28 @@ def plot_loss(history, string_l = 'Loss', draw_val = False):
 
 
 
-# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(drop_bias = True)
 
+
+
+
+
+
+
+
+
+
+X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = False  , drop_bias = True)
 # X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True, drop_bias = True)
-
-# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_window = True, drop_bias = True)
-
-X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True, add_window = True, drop_bias = True, Test_size = 7300)
+# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = False, add_window = True, drop_bias = True)
+# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True, add_window = True, drop_bias = True)
 
 
-# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_hour = True, add_window = True)
-# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_window = True)
-# X_train_scaled_poly, y_train, time_train, X_test_scaled_poly, y_test, time_test = PolyScaledData(add_CO_hour = True)
+
+# X_train_scaled_poly = X_train_scaled_poly.iloc[23:]
+# y_train = y_train.iloc[23:]
+# time_train = time_train.iloc[23:]
 
 
-X_train_scaled_poly = X_train_scaled_poly.iloc[23:]
-y_train = y_train.iloc[23:]
-time_train = time_train.iloc[23:]
 
 
 X_all_scaled_poly = X_train_scaled_poly.append(X_test_scaled_poly, ignore_index=True) 
@@ -704,84 +695,66 @@ y_all = y_train.append(y_test, ignore_index=True)
 time_all = time_train.append(time_test, ignore_index = True)
 
 
-
-
-
-from sklearn.model_selection import GridSearchCV
-from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
-
-
-l_feat = X_train_scaled_poly.shape[1]
-activ_func = 'tanh'
-loss_func = 'mean_absolute_error'
-
-
+print("TRAINTRAIN")
 print(X_train_scaled_poly)
+print(y_train)
 
 
 
-
-b_1 = 0.9
-b_2 = 0.999
-eps = 1e-07
-lr = 0.005
-d = 0.005
+print("TESTTEST")
+print(X_test_scaled_poly)
+print(y_test)
 
 
-def network_model(l_r = 0.01, d_c = 0.001, b_1 = 0.9, b_2 = 0.999, eps = 1e-01, reg = -1, activ = 'tanh',n_layer = 1, n_neur = 10):
-    network = models.Sequential()
-    for j in range(n_layer):
-        network.add(layers.Dense(units = n_neur, activation = activ, input_shape=(l_feat,), kernel_regularizer=regularizers.L1(10**reg)))
+# Number_measure = 10
+
+# MSE_Train = np.array([np.NaN] * Number_measure)
+# MAPE_Train = np.array([np.NaN] * Number_measure)
+# GRE_Train = np.array([np.NaN] * Number_measure)
+
+# MSE_Test = np.array([np.NaN] * Number_measure)
+# MAPE_Test = np.array([np.NaN] * Number_measure)
+# GRE_Test = np.array([np.NaN] * Number_measure)
+
+
+# for j in range(Number_measure):
+#     network = models.Sequential()
+#     l_feat = X_train_scaled_poly.shape[1]
+#     print(j)
+#     network.add(layers.Dense(units = 5, activation = 'tanh', input_shape=(l_feat,), kernel_regularizer=regularizers.L1(10**(-1))))
+#     network.add(layers.Dense(units = 5, activation = 'tanh', kernel_regularizer=regularizers.L1(10**(-1))))
+#     network.add(layers.Dense(units=1, activation = 'linear'))
+#     network.compile(loss='mean_absolute_error', optimizer= keras.optimizers.Adam(learning_rate = 0.01, decay = 0.001, epsilon = 1e-01), metrics=['mean_absolute_error','mean_squared_error','mean_absolute_percentage_error']) 
+
+
+
+#     history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 1000,batch_size = 50)
+
+#     if j == Number_measure - 1:
+#         plot_loss(history, string_l = "MAE", draw_val = False)
     
-    network.add(layers.Dense(units = 1, activation = 'linear'))
-    network.compile(loss = 'mean_absolute_error', optimizer= keras.optimizers.Adam(learning_rate = l_r, decay = d_c, beta_1 = b_1, beta_2 = b_2, epsilon = eps), metrics='mean_absolute_percentage_error') 
-    return network
+#     MSE_Train[j]  = mean_s_error(y_train,network.predict(X_train_scaled_poly).flatten())    
+#     MAPE_Train[j] = mean_absolute_percentage_error(y_train,network.predict(X_train_scaled_poly).flatten())
+#     GRE_Train[j]  = gate_rate_error(y_train,network.predict(X_train_scaled_poly).flatten())
+
+#     MSE_Test[j]   = mean_s_error(y_test,network.predict(X_test_scaled_poly).flatten())    
+#     MAPE_Test[j]  = mean_absolute_percentage_error(y_test,network.predict(X_test_scaled_poly).flatten())
+#     GRE_Test[j]   = gate_rate_error(y_test,network.predict(X_test_scaled_poly).flatten())
 
 
 
-
-FFNN = KerasRegressor(build_fn = network_model, verbose=0, batch_size = 50, epochs = 2000)
-
+#     keras.backend.clear_session()
 
 
-parameters = {
-              # 'l_r': [0.01, 0.05,  0.1],
-              # 'd_c': [0.001,0.005, 0.01],
-              # 'b_1': [0.8, 0.9, 0.99],
-              # 'b_2': [0.9, 0.99, 0.999],
-
-              # 'reg': [-1, -1.5],
-              # 'eps': [1e-07, 1e-01],
-              'n_layer': [1,2,3,4],
-              'n_neur': [3,5,7,10,13,15],
-              'activ': ['tanh','relu']
-            
-              # 'activ': ['linear', 'tanh', 'sigmoid', 'relu', 'exponential']
-              # 'epochs': [30, 100, 300, 1000],
-                }
-
-grid =  GridSearchCV(estimator = FFNN,
-                           param_grid = parameters,
-                           # scoring='neg_mean_squared_error',
-                           # scoring = "neg_mean_absolute_error",
-                           scoring = "neg_mean_absolute_percentage_error",
-                           cv = 10, 
-                           n_jobs = -1)
+# print("MAE")
+# print(MSE_Train.mean(), MSE_Train.min(), MSE_Train.max(), MSE_Train.std())
+# print(MAPE_Train.mean(), MAPE_Train.min(), MAPE_Train.max(), MAPE_Train.std())
+# print(GRE_Train.mean(), GRE_Train.min(), GRE_Train.max(), GRE_Train.std())
 
 
-grid_result = grid.fit(X_train_scaled_poly, y_train)
-
-
-print(grid_result.best_params_)
-print(grid_result.best_score_)
-
-
-# print(grid_result.cv_results_)
-
-df_result = pd.DataFrame(grid_result.cv_results_)
-print(df_result)
-
-df_result.to_csv("GSCV/GSCV_2000_V6_ep.csv", index=True)
+# print(MSE_Test.mean(),MSE_Test.min(), MSE_Test.max(), MSE_Test.std())
+# print(MAPE_Test.mean(),MAPE_Test.min(), MAPE_Test.max(), MAPE_Test.std())
+# print(GRE_Test.mean(),GRE_Test.min(), GRE_Test.max(), GRE_Test.std())
 
 
 
@@ -790,54 +763,48 @@ df_result.to_csv("GSCV/GSCV_2000_V6_ep.csv", index=True)
 
 
 
+from sklearn.neighbors import KNeighborsRegressor
 
 
 
 
 
 
-FFNN = KerasRegressor(build_fn = network_model, verbose=0, batch_size = 50, epochs = 1000)
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+
+GBR = GradientBoostingRegressor(loss = 'squared_error', learning_rate = 0.1, n_estimators = 200, criterion = 'friedman_mse', subsample = 0.7, max_depth = 2, max_features = 3)
+GBR.fit(X_train_scaled_poly, y_train)
+y_pred = GBR.predict(X_test_scaled_poly)
+print("\nGradient Boosting Regressor, 200 criterion = 'friedman_mse', subsample = 0.7")
+print(mean_absolute_percentage_error(y_test, y_pred))
+print(mean_s_error(y_test, y_pred))
+print(gate_rate_error(y_test, y_pred))
+
+GBR = GradientBoostingRegressor(loss = 'squared_error', learning_rate = 0.1, n_estimators = 200, criterion = 'squared_error', subsample = 0.7, max_depth = 2, max_features = 3)
+GBR.fit(X_train_scaled_poly, y_train)
+y_pred = GBR.predict(X_test_scaled_poly)
+print("\nGradient Boosting Regressor, 200 criterion = 'squared_error', subsample = 0.7")
+print(mean_absolute_percentage_error(y_test, y_pred))
+print(mean_s_error(y_test, y_pred))
+print(gate_rate_error(y_test, y_pred))
+
+GBR = GradientBoostingRegressor(loss = 'squared_error', learning_rate = 0.1, n_estimators = 200, criterion = 'friedman_mse', subsample = 0.8, max_depth = 2, max_features = 3)
+GBR.fit(X_train_scaled_poly, y_train)
+y_pred = GBR.predict(X_test_scaled_poly)
+print("\nGradient Boosting Regressor, 200 criterion = 'friedman_mse', subsample = 0.8")
+print(mean_absolute_percentage_error(y_test, y_pred))
+print(mean_s_error(y_test, y_pred))
+print(gate_rate_error(y_test, y_pred))
 
 
-
-parameters = {
-              # 'l_r': [0.01, 0.05,  0.1],
-              # 'd_c': [0.001,0.005, 0.01],
-              # 'b_1': [0.8, 0.9, 0.99],
-              # 'b_2': [0.9, 0.99, 0.999],
-
-              # 'reg': [-1, -1.5],
-              # 'eps': [1e-07, 1e-01],
-              'n_layer': [1,2,3,4],
-              'n_neur': [3,5,7,10,13,15],
-              'activ': ['tanh','relu']
-            
-              # 'activ': ['linear', 'tanh', 'sigmoid', 'relu', 'exponential']
-              # 'epochs': [30, 100, 300, 1000],
-                }
-
-grid =  GridSearchCV(estimator = FFNN,
-                           param_grid = parameters,
-                           # scoring='neg_mean_squared_error',
-                           # scoring = "neg_mean_absolute_error",
-                           scoring = "neg_mean_absolute_percentage_error",
-                           cv = 10, 
-                           n_jobs = -1)
-
-
-grid_result = grid.fit(X_train_scaled_poly, y_train)
-
-
-print(grid_result.best_params_)
-print(grid_result.best_score_)
-
-
-# print(grid_result.cv_results_)
-
-df_result = pd.DataFrame(grid_result.cv_results_)
-print(df_result)
-
-df_result.to_csv("GSCV/GSCV_1000_V6_ep.csv", index=True)
+GBR = GradientBoostingRegressor(loss = 'squared_error', learning_rate = 0.1, n_estimators = 200, criterion = 'squared_error', subsample = 0.8, max_depth = 2, max_features = 3)
+GBR.fit(X_train_scaled_poly, y_train)
+y_pred = GBR.predict(X_test_scaled_poly)
+print("\nGradient Boosting Regressor, 200 criterion = 'squared_error', subsample = 0.8")
+print(mean_absolute_percentage_error(y_test, y_pred))
+print(mean_s_error(y_test, y_pred))
+print(gate_rate_error(y_test, y_pred))
 
 
 
@@ -847,7 +814,68 @@ df_result.to_csv("GSCV/GSCV_1000_V6_ep.csv", index=True)
 
 
 
-# history = network.fit(X_train_scaled_poly, y_train, verbose=0, epochs = 1000,batch_size = 50)
+
+# from sklearn.model_selection import GridSearchCV
+# parameters = {
+#               # 'loss': ['squared_error', 'absolute_error', 'huber', 'quantile'],
+#               'loss': ['squared_error', 'absolute_error'],
+#               'learning_rate': [0.3, 0.1, 0.01],
+#               'n_estimators': [100, 200, 400],
+#               'criterion': ['friedman_mse', 'squared_error'],
+#               'min_samples_split': [2, 8, 32],
+#               'subsample': [0.7 ,0.8, 0.9, 1],
+#               'max_depth': [2,3,4,5],
+#               'max_features': [1,2,3]
+#                 }
+
+# grid =  GridSearchCV(estimator = GradientBoostingRegressor(),
+#                            param_grid = parameters,
+#                            scoring = "neg_mean_absolute_percentage_error",
+#                            cv = 5, 
+#                            n_jobs = -1)
+
+
+# # # grid_result = grid.fit(X_train_scaled_poly, y_train)
+
+
+# # X_all_scaled_poly = X_all_scaled_poly.iloc[:2500]
+# # y_all = y_all.iloc[:2500]
+
+# grid_result = grid.fit(X_all_scaled_poly, y_all)
+
+# print(grid_result.best_params_)
+# print(grid_result.best_score_)
+
+
+# # print(grid_result.cv_results_)
+
+# df_result = pd.DataFrame(grid_result.cv_results_)
+# print(df_result)
+
+# df_result.to_csv("GSCV/GSCV_GBR_V4.csv", index=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -860,3 +888,6 @@ df_result.to_csv("GSCV/GSCV_1000_V6_ep.csv", index=True)
 
 
 plt.show()
+
+
+
