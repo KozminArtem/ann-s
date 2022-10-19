@@ -123,16 +123,35 @@ List_CO = ['CO(GT)', 'R_CO', 'R_NMHC', 'R_NOx', 'R_NO2', 'R_O3', 'T', 'RH']
 for collumn_diff in List_CO:
     df_src_diffmean = df_src_diffmean[df_src_diffmean[collumn_diff] > -100]
 
+
+
+
+
+
+
 # df_src_diffmean.rename(columns = {'PT08.S1(CO)':'R_CO', 'PT08.S2(NMHC)':'R_NMHC', 'PT08.S3(NOx)':'R_NOx', 'PT08.S4(NO2)':'R_NO2', 'PT08.S5(O3)': 'R_O3'}, inplace = True)
 
 print(df_src_diffmean.info())
 
 
+
+
+# plt.subplots(sharey = True, figsize = (12, 12))
+# c_m_pear = df_src_diffmean[List_CO].corr(method='pearson')
+# sns.heatmap(c_m_pear, annot=True)
+# plt.title("Pearson correlation", fontsize=22)
+# plt.savefig('fig_AQ/Pearson.png')
+
+
 plt.subplots(sharey = True, figsize = (12, 12))
 c_m_pear = df_src_diffmean[List_CO].corr(method='pearson')
-sns.heatmap(c_m_pear, annot=True)
+mask = np.triu(np.ones_like(c_m_pear, dtype = bool))
+sns.heatmap(c_m_pear, mask = mask, annot=True, cmap = 'BrBG')
 plt.title("Pearson correlation", fontsize=22)
-# plt.savefig('fig_AQ/Pearson.png')
+plt.savefig('fig_AQ/Pearson.png')
+
+
+
 
 plt.subplots(sharey = True, figsize = (12, 12))
 c_m_kend = df_src_diffmean[List_CO].corr(method='kendall')
