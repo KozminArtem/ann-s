@@ -355,37 +355,105 @@ from sklearn.linear_model import Lasso, Ridge
 plt.figure(figsize = (16,10))
 sns.boxplot(x = 'hour', y = 'CO(GT)', data = data)
 plt.title("Box Plot. CO(hour)")
-plt.savefig('../fig_AQ/Box_CO_hour.png')
+# plt.savefig('../fig_AQ/Box_CO_hour.png')
 
 
-plt.figure(figsize = (16,10))
-sns.boxplot(x = 'hour', y = 'PT08.S1(CO)', data = data)
-plt.title("Box Plot. R_CO(hour)")
-plt.savefig('../fig_AQ/Box_R_CO_hour.png')
 
 
-plt.figure(figsize = (16,10))
-sns.boxplot(x = 'hour', y = 'T', data = data)
+print(data)
 
-RH_min = data.RH.min()    
-RH_max = data.RH.max()
+time_min = 1600
+time_max = 2650
 
-# len_RH = 20
-# RH_list = np.arange(RH_min, RH_max,len_RH)
-data['rh_sort'] = data['RH']/5
-data['rh_sort'] = data['rh_sort'].round() 
 
-plt.figure(figsize = (16,10))
-sns.boxplot(x = 'rh_sort', y = 'CO(GT)', data = data)
+plt.figure()
+plt.plot(data['datetime'].iloc[time_min:time_max], data['CO(GT)'].iloc[time_min:time_max])
 
-plt.figure(figsize = (16,10))
-sns.boxplot(x = 'rh_sort', y = 'PT08.S1(CO)', data = data)
 
-plt.figure(figsize = (16,10))
-sns.boxplot(x = 'rh_sort', y = 'T', data = data)
 
-plt.figure(figsize = (16,10))
-sns.boxplot(x = 'hour', y = 'RH', data = data)
+
+import pywt
+
+
+sst = data['CO(GT)'].iloc[time_min:time_max]
+
+time = np.arange(time_min,time_max, 1)
+
+
+print(time)
+
+
+
+dt = 1.0
+
+
+wavelet = 'mexh'
+max_scale = 50
+min_scale = 0.5
+
+scales = np.arange(min_scale, max_scale, 1)
+
+
+[cfs, frequencies] = pywt.cwt(sst, scales, wavelet, dt)
+
+
+period = 1.0/frequencies
+
+print(frequencies)
+print(period)
+
+A_scales, B_time = np.meshgrid(time/24, period)
+
+
+plt.figure('pywt: 2D-график для z = w (a,b)')
+plt.title('pywt: Плоскость ab с цветовыми областями ВП', size=12)
+plt.contourf(A_scales, B_time, np.abs(cfs), extend='both')
+plt.axhline(y = 24, color = 'green', linestyle = '-')
+plt.axhline(y = 24*7, color = 'green', linestyle = '-')
+
+
+
+
+
+
+
+# plt.figure(figsize = (16,10))
+# sns.boxplot(x = 'hour', y = 'PT08.S1(CO)', data = data)
+# plt.title("Box Plot. R_CO(hour)")
+# # plt.savefig('../fig_AQ/Box_R_CO_hour.png')
+
+
+
+
+
+
+
+# plt.figure(figsize = (16,10))
+# sns.boxplot(x = 'hour', y = 'T', data = data)
+
+# RH_min = data.RH.min()    
+# RH_max = data.RH.max()
+
+# # len_RH = 20
+# # RH_list = np.arange(RH_min, RH_max,len_RH)
+# data['rh_sort'] = data['RH']/5
+# data['rh_sort'] = data['rh_sort'].round() 
+
+# plt.figure(figsize = (16,10))
+# sns.boxplot(x = 'rh_sort', y = 'CO(GT)', data = data)
+
+# plt.figure(figsize = (16,10))
+# sns.boxplot(x = 'rh_sort', y = 'PT08.S1(CO)', data = data)
+
+# plt.figure(figsize = (16,10))
+# sns.boxplot(x = 'rh_sort', y = 'T', data = data)
+
+# plt.figure(figsize = (16,10))
+# sns.boxplot(x = 'hour', y = 'RH', data = data)
+
+
+
+
 
 # plt.figure(figsize = (16,10))
 # sns.boxplot(x = 'hour', y = 'PT08.S2(NMHC)', data = data)
@@ -412,59 +480,63 @@ sns.boxplot(x = 'hour', y = 'RH', data = data)
 # plt.figure(figsize = (16,10))
 # sns.scatterplot(data=data_temp, x='T', y='CO(GT)', hue = 'hour', palette='colorblind')
 
-MeanCo_hour = np.array([np.NaN] * 24)
-ar_hour = range(24)
-for i in range(24):
-    MeanCo_hour[i] = data[data['hour'] == i]['CO(GT)'].mean()
+# MeanCo_hour = np.array([np.NaN] * 24)
+# ar_hour = range(24)
+# for i in range(24):
+#     MeanCo_hour[i] = data[data['hour'] == i]['CO(GT)'].mean()
 
-data["hour"] = df_new['datetime'].dt.hour
-data["COmean"] = MeanCo_hour[data["hour"]]
-# data["weekday"] = df_new['datetime'].dt.weekday
-y = data.dropna()[feat_target]
-X = data.dropna().drop([feat_target], axis=1)
+# data["hour"] = df_new['datetime'].dt.hour
+# data["COmean"] = MeanCo_hour[data["hour"]]
+# # data["weekday"] = df_new['datetime'].dt.weekday
+# y = data.dropna()[feat_target]
+# X = data.dropna().drop([feat_target], axis=1)
 
-X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=T_size)
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = T_size)
+# X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=T_size)
+# # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = T_size)
 
-time_train = X_train.dropna()['datetime']
-time_test = X_test.dropna()['datetime']
-X_train = X_train.dropna().drop(['datetime'], axis=1)
-X_test = X_test.dropna().drop(['datetime'], axis=1)
+# time_train = X_train.dropna()['datetime']
+# time_test = X_test.dropna()['datetime']
+# X_train = X_train.dropna().drop(['datetime'], axis=1)
+# X_test = X_test.dropna().drop(['datetime'], axis=1)
 
-X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train))
-X_test_scaled = pd.DataFrame(scaler.transform(X_test))
-list_X = X_test.columns.values.tolist()
-X_train_scaled.set_axis(list_X, axis = 'columns', inplace=True)
-X_test_scaled.set_axis(list_X, axis = 'columns', inplace=True)
+# X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train))
+# X_test_scaled = pd.DataFrame(scaler.transform(X_test))
+# list_X = X_test.columns.values.tolist()
+# X_train_scaled.set_axis(list_X, axis = 'columns', inplace=True)
+# X_test_scaled.set_axis(list_X, axis = 'columns', inplace=True)
 
-hour_train_scaled = X_train_scaled.dropna()['hour']
-hour_test_scaled = X_test_scaled.dropna()['hour']
-X_train_scaled = X_train_scaled.dropna().drop(['hour'], axis=1)
-X_test_scaled = X_test_scaled.dropna().drop(['hour'], axis=1)
+# hour_train_scaled = X_train_scaled.dropna()['hour']
+# hour_test_scaled = X_test_scaled.dropna()['hour']
+# X_train_scaled = X_train_scaled.dropna().drop(['hour'], axis=1)
+# X_test_scaled = X_test_scaled.dropna().drop(['hour'], axis=1)
 
-COmean_train_scaled = X_train_scaled.dropna()['COmean']
-COmean_test_scaled = X_test_scaled.dropna()['COmean']
-X_train_scaled = X_train_scaled.dropna().drop(['COmean'], axis=1)
-X_test_scaled = X_test_scaled.dropna().drop(['COmean'], axis=1)
+# COmean_train_scaled = X_train_scaled.dropna()['COmean']
+# COmean_test_scaled = X_test_scaled.dropna()['COmean']
+# X_train_scaled = X_train_scaled.dropna().drop(['COmean'], axis=1)
+# X_test_scaled = X_test_scaled.dropna().drop(['COmean'], axis=1)
 
-poly = PolynomialFeatures(degree=Degree)
+# poly = PolynomialFeatures(degree=Degree)
 
-X_train_scaled_poly = pd.DataFrame(poly.fit_transform(X_train_scaled))
-X_test_scaled_poly = pd.DataFrame(poly.fit_transform(X_test_scaled))
-list_scaled_poly =list(poly.get_feature_names_out())
-X_train_scaled_poly.set_axis(list_scaled_poly, axis = 'columns', inplace=True)
-X_test_scaled_poly.set_axis(list_scaled_poly, axis = 'columns', inplace=True)
-X_train_scaled_poly = X_train_scaled_poly.dropna().drop(list_delete, axis=1)
-X_test_scaled_poly  = X_test_scaled_poly.dropna().drop(list_delete, axis=1)
+# X_train_scaled_poly = pd.DataFrame(poly.fit_transform(X_train_scaled))
+# X_test_scaled_poly = pd.DataFrame(poly.fit_transform(X_test_scaled))
+# list_scaled_poly =list(poly.get_feature_names_out())
+# X_train_scaled_poly.set_axis(list_scaled_poly, axis = 'columns', inplace=True)
+# X_test_scaled_poly.set_axis(list_scaled_poly, axis = 'columns', inplace=True)
+# X_train_scaled_poly = X_train_scaled_poly.dropna().drop(list_delete, axis=1)
+# X_test_scaled_poly  = X_test_scaled_poly.dropna().drop(list_delete, axis=1)
 
-# X_train_scaled_poly['hour'] = hour_train_scaled
-# X_test_scaled_poly['hour'] = hour_test_scaled
+# # X_train_scaled_poly['hour'] = hour_train_scaled
+# # X_test_scaled_poly['hour'] = hour_test_scaled
 
-X_train_scaled_poly['COmean'] = COmean_train_scaled 
-X_test_scaled_poly['COmean'] = COmean_test_scaled
+# X_train_scaled_poly['COmean'] = COmean_train_scaled 
+# X_test_scaled_poly['COmean'] = COmean_test_scaled
 
-X_all_scaled_poly = X_train_scaled_poly.append(X_test_scaled_poly, ignore_index=True) 
-y_all = y_train.append(y_test, ignore_index=True)
+# X_all_scaled_poly = X_train_scaled_poly.append(X_test_scaled_poly, ignore_index=True) 
+# y_all = y_train.append(y_test, ignore_index=True)
+
+
+
+
 
 
 # lr = LinearRegression()
@@ -544,62 +616,62 @@ y_all = y_train.append(y_test, ignore_index=True)
 # plotModelResults(xgb,X_train = X_train_scaled_poly,X_test=X_test_scaled_poly, plot_intervals=True, string ="sc_pol XGBR with h,d", y_train = y_train, y_test = y_test, time_train = time_train, time_test = time_test)
 
 
-CO_hour_Q1 = np.array([np.NaN] * 24)
+# CO_hour_Q1 = np.array([np.NaN] * 24)
 
-for i in range(24):
-    CO_hour_Q1[i] = data[data['hour'] == i]['CO(GT)'].quantile(0.25)
+# for i in range(24):
+#     CO_hour_Q1[i] = data[data['hour'] == i]['CO(GT)'].quantile(0.25)
 
-data["hour"] = df_new['datetime'].dt.hour
-data["COmean"] = CO_hour_Q1[data["hour"]]
+# data["hour"] = df_new['datetime'].dt.hour
+# data["COmean"] = CO_hour_Q1[data["hour"]]
 
-# data["weekday"] = df_new['datetime'].dt.weekday
+# # data["weekday"] = df_new['datetime'].dt.weekday
 
-y = data.dropna()[feat_target]
-X = data.dropna().drop([feat_target], axis=1)
+# y = data.dropna()[feat_target]
+# X = data.dropna().drop([feat_target], axis=1)
 
-X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=T_size)
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = T_size)
+# X_train, X_test, y_train, y_test = timeseries_train_test_split(X, y, test_size=T_size)
+# # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = T_size)
 
-time_train = X_train.dropna()['datetime']
-time_test = X_test.dropna()['datetime']
-X_train = X_train.dropna().drop(['datetime'], axis=1)
-X_test = X_test.dropna().drop(['datetime'], axis=1)
+# time_train = X_train.dropna()['datetime']
+# time_test = X_test.dropna()['datetime']
+# X_train = X_train.dropna().drop(['datetime'], axis=1)
+# X_test = X_test.dropna().drop(['datetime'], axis=1)
 
-X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train))
-X_test_scaled = pd.DataFrame(scaler.transform(X_test))
-list_X = X_test.columns.values.tolist()
-X_train_scaled.set_axis(list_X, axis = 'columns', inplace=True)
-X_test_scaled.set_axis(list_X, axis = 'columns', inplace=True)
+# X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train))
+# X_test_scaled = pd.DataFrame(scaler.transform(X_test))
+# list_X = X_test.columns.values.tolist()
+# X_train_scaled.set_axis(list_X, axis = 'columns', inplace=True)
+# X_test_scaled.set_axis(list_X, axis = 'columns', inplace=True)
 
-hour_train_scaled = X_train_scaled.dropna()['hour']
-hour_test_scaled = X_test_scaled.dropna()['hour']
-X_train_scaled = X_train_scaled.dropna().drop(['hour'], axis=1)
-X_test_scaled = X_test_scaled.dropna().drop(['hour'], axis=1)
+# hour_train_scaled = X_train_scaled.dropna()['hour']
+# hour_test_scaled = X_test_scaled.dropna()['hour']
+# X_train_scaled = X_train_scaled.dropna().drop(['hour'], axis=1)
+# X_test_scaled = X_test_scaled.dropna().drop(['hour'], axis=1)
 
-COmean_train_scaled = X_train_scaled.dropna()['COmean']
-COmean_test_scaled = X_test_scaled.dropna()['COmean']
-X_train_scaled = X_train_scaled.dropna().drop(['COmean'], axis=1)
-X_test_scaled = X_test_scaled.dropna().drop(['COmean'], axis=1)
+# COmean_train_scaled = X_train_scaled.dropna()['COmean']
+# COmean_test_scaled = X_test_scaled.dropna()['COmean']
+# X_train_scaled = X_train_scaled.dropna().drop(['COmean'], axis=1)
+# X_test_scaled = X_test_scaled.dropna().drop(['COmean'], axis=1)
 
-poly = PolynomialFeatures(degree=Degree)
+# poly = PolynomialFeatures(degree=Degree)
 
-X_train_scaled_poly = pd.DataFrame(poly.fit_transform(X_train_scaled))
-X_test_scaled_poly = pd.DataFrame(poly.fit_transform(X_test_scaled))
-list_scaled_poly =list(poly.get_feature_names_out())
-X_train_scaled_poly.set_axis(list_scaled_poly, axis = 'columns', inplace=True)
-X_test_scaled_poly.set_axis(list_scaled_poly, axis = 'columns', inplace=True)
-X_train_scaled_poly = X_train_scaled_poly.dropna().drop(list_delete, axis=1)
-X_test_scaled_poly  = X_test_scaled_poly.dropna().drop(list_delete, axis=1)
+# X_train_scaled_poly = pd.DataFrame(poly.fit_transform(X_train_scaled))
+# X_test_scaled_poly = pd.DataFrame(poly.fit_transform(X_test_scaled))
+# list_scaled_poly =list(poly.get_feature_names_out())
+# X_train_scaled_poly.set_axis(list_scaled_poly, axis = 'columns', inplace=True)
+# X_test_scaled_poly.set_axis(list_scaled_poly, axis = 'columns', inplace=True)
+# X_train_scaled_poly = X_train_scaled_poly.dropna().drop(list_delete, axis=1)
+# X_test_scaled_poly  = X_test_scaled_poly.dropna().drop(list_delete, axis=1)
 
-# X_train_scaled_poly['hour'] = hour_train_scaled
-# X_test_scaled_poly['hour'] = hour_test_scaled
-X_train_scaled_poly['COmean'] = COmean_train_scaled 
-X_test_scaled_poly['COmean'] = COmean_test_scaled
+# # X_train_scaled_poly['hour'] = hour_train_scaled
+# # X_test_scaled_poly['hour'] = hour_test_scaled
+# X_train_scaled_poly['COmean'] = COmean_train_scaled 
+# X_test_scaled_poly['COmean'] = COmean_test_scaled
 
-X_all_scaled_poly = X_train_scaled_poly.append(X_test_scaled_poly, ignore_index=True) 
-y_all = y_train.append(y_test, ignore_index=True)
+# X_all_scaled_poly = X_train_scaled_poly.append(X_test_scaled_poly, ignore_index=True) 
+# y_all = y_train.append(y_test, ignore_index=True)
 
-List_Train_Size = np.arange(0.01,1.0,0.01)
+# List_Train_Size = np.arange(0.01,1.0,0.01)
 
 # for cv_par in range(2,30, 10):
 #     plt.figure(figsize = (16,10))

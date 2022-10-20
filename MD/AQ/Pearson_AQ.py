@@ -125,7 +125,7 @@ for collumn_diff in List_CO:
 
 
 
-
+# df_src_diffmean['1/lnRCO'] = 1.0/np.log10(df_src_diffmean['R_CO'])
 
 
 
