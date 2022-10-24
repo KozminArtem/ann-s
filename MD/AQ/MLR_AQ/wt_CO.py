@@ -126,7 +126,7 @@ plt.figure('pywt: 2D-график для z = w (a,b)')
 plt.title('Wavelet Morlet CO(GT)', size=12)
 plt.contourf(A_scales, B_time, np.abs(cfs), extended = 'both	')
 
-plt.axhline(y = 24, color = 'green', linestyle = '-')
+plt.axhline(y = 24, color = 'lime', linestyle = '-')
 plt.axhline(y = 24*7, color = 'aqua', linestyle = '-')
 
 # plt.axhline(y = 12, color = 'blue', linestyle = '-.')
@@ -138,6 +138,6 @@ ax.set_xlabel('Time, day', fontsize = 12)
 # plt.axhline(y = 24*7, color = 'green', linestyle = '-')
 
 
-# plt.savefig('../fig_AQ/Wavelet_7.png')
+plt.savefig('../fig_AQ/Wavelet_7.png')
 
 plt.show()
